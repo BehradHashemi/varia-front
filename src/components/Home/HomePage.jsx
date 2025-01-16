@@ -1,4 +1,5 @@
 import Banner from "../layout/Banner";
+import Blog from "../layout/Blog";
 import Resume from "../layout/Resume";
 import Service from "../layout/Service";
 import Support from "../layout/Support";
@@ -12,6 +13,7 @@ function HomePage() {
       <Resume></Resume>
       <Support></Support>
       <UIUX></UIUX>
+      <Blog></Blog>
     </div>
   );
 }
