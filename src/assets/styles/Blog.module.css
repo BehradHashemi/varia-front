@@ -1,0 +1,63 @@
+.container {
+  width: 100%;
+  height: 500px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  margin: 150px auto 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 105;
+}
+.container img {
+  width: 80%;
+  display: block;
+  margin: -100px auto 0;
+}
+.container h2 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  text-align: justify;
+  color: #666666;
+}
+.container span {
+  color: #ff8b00;
+  font-weight: 600;
+}
+.container p {
+  font-weight: 700;
+  text-align: justify;
+  font-size: 1rem;
+  color: #666666;
+}
+.swiperButtons {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+
+.div {
+  width: 100%;
+  margin: 50px auto;
+}
+
+.fade {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (width <= 1000px) {
+  .container img {
+    width: 90%;
+  }
+  .container h2 {
+    font-size: 1.2rem;
+  }
+  .container p {
+    font-size: .9rem;
+  }
+}
