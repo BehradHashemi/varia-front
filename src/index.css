@@ -1,0 +1,31 @@
+@font-face {
+  font-family: "YekanBakh";
+  src: url("./assets/YekanBakh/YekanBakh-Regular/YekanBakh-Regular.ttf");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "YekanBakh";
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
+a {
+  color: #616161;
+  text-decoration: none;
+}
+a:hover {
+  color: #000000;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  max-width: 1300px;
+  color: #616161;
+  background-color: #F4F5F7;
+  margin: 0 auto;
+  user-select: none;
+}

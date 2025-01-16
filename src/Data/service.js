@@ -1,0 +1,23 @@
+const servicesData = [
+  {
+    id: 1,
+    title: "طراحی وبسایت",
+    emoji: "/web.svg",
+  },
+  {
+    id: 2,
+    title: "طراحی گرافیکی",
+    emoji: "/pen.svg",
+  },
+  {
+    id: 3,
+    title: "ادمین اینستاگرام",
+    emoji: "/admin.svg",
+  },
+  {
+    id: 4,
+    title: "سئو و بهنیه سازی",
+    emoji: "/seo.svg",
+  },
+];
+export { servicesData };

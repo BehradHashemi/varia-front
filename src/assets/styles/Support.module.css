@@ -1,0 +1,83 @@
+.container {
+  width: 90%;
+  height: 300px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 150px auto 50px;
+  padding: 0 50px;
+  background: #374bff;
+  color: #ffffff;
+  border-radius: 24px;
+  z-index: 100;
+}
+.container img {
+  display: block;
+  width: 50%;
+  animation: MoveUpDown 2s linear infinite;
+}
+.container main {
+  width: 50%;
+}
+.container main h2,
+.container main h1 {
+  font-weight: 800;
+}
+.container main p {
+  text-align: justify;
+  line-height: 30px;
+}
+.buttons {
+  display: flex;
+  align-items: center;
+}
+.buttons a {
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: #374bff;
+  background-color: #ffffff;
+  margin: 10px 0;
+}
+
+@keyframes MoveUpDown {
+  0% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(0px);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}
+@media (width <= 1000px) {
+  .container {
+    flex-direction: column;
+    height: max-content;
+    padding: 40px 15px 10px 15px;
+    margin: 20px auto;
+  }
+  .container img {
+    display: block;
+    width: 60%;
+  }
+  .container main {
+    width: 100%;
+  }
+}
+@media (width <= 768px) {
+  .container main h2 {
+    font-size: 1rem;
+  }
+  .container main h1 {
+    font-size: 1.5rem;
+  }
+  .buttons a {
+    padding: 5px;
+    margin: 10px 0;
+  }
+}
