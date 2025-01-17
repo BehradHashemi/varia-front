@@ -6,6 +6,7 @@ import Support from "../layout/Support";
 import UIUX from "../layout/UIUX";
 
 function HomePage() {
+  
   return (
     <div>
       <Banner></Banner>

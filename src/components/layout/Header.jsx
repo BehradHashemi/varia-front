@@ -13,7 +13,7 @@ function Header() {
     <div className="header">
       {/* NavBar on Computer or Tablet */}
       <nav id="nav_1">
-        <h1>LOGO</h1>
+        <img src="/logo.svg" alt="logo" />
         <NavLink to="/list" id="list">
           <BiMenuAltRight style={{ fontSize: "1.5rem" }} /> لیست خدمات
         </NavLink>

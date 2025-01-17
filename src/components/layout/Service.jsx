@@ -7,19 +7,16 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import ServiceStyles from "../../assets/styles/Service.module.css";
 import "../../assets/styles/Service.css";
 
-import { servicesData } from "../../Data/service.js";
+import servicesData from "../../Data/Service.json";
+import { useEffect, useState } from "react";
 
 function Service() {
-  const serviceData = servicesData.map((data) => {
-    return (
-      <SwiperSlide key={data.id}>
-        <div className={ServiceStyles.container}>
-          <img src={data.emoji} alt="icon" />
-          <p>{data.title}</p>
-        </div>
-      </SwiperSlide>
-    );
-  });
+  const [services, setServices] = useState([]);
+  useEffect(() => {
+    setServices(servicesData.Services);
+  }, []);
+  console.log(services);
+
   const pagination = {
     clickable: true,
     renderBullet: function (index, className) {
@@ -71,7 +68,17 @@ function Service() {
         }}
         modules={[Pagination, Autoplay, Navigation]}
       >
-        {serviceData}
+        {services.map((d, i) => {
+          const { title, emoji } = d;
+          return (
+            <SwiperSlide key={i}>
+              <div className={ServiceStyles.container}>
+                <img src={emoji} alt="icon" />
+                <p>{title}</p>
+              </div>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
       <div className={ServiceStyles.swiperButtons}>
         <div className={ServiceStyles.pagination}>

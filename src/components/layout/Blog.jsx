@@ -8,24 +8,16 @@ import BlogStyles from "../../assets/styles/Blog.module.css";
 import "../../assets/styles//Blog.css";
 
 import { GoArrowLeft } from "react-icons/go";
-import { blogsData } from "../../Data/Blog";
+import { useEffect, useState } from "react";
+
+import BlogsData from "../../Data/Blog.json";
 
 function Blog() {
-  const blogData = blogsData.map((data) => {
-    return (
-      <SwiperSlide key={data.id}>
-        <div className={BlogStyles.container}>
-          <img src={data.cover} alt="cover" />
-          <h2>{data.title}</h2>
-          <span>{data.date}</span>
-          <p className={data.description.length >= 20 ? BlogStyles.fade : ""}>
-            {data.description}
-          </p>
-          <GoArrowLeft color="#FF8B00" fontSize="2rem" />
-        </div>
-      </SwiperSlide>
-    );
-  });
+  const [blogs, setBlogs] = useState([]);
+  useEffect(() => {
+    setBlogs(BlogsData.Blogs);
+  }, []);
+
   const pagination = {
     clickable: true,
     renderBullet: function (index, className) {
@@ -75,7 +67,50 @@ function Blog() {
         }}
         modules={[Pagination, Autoplay, Navigation]}
       >
-        {blogData}
+        {!blogs.length && (
+          <>
+            <SwiperSlide className={BlogStyles.loading}>
+              <div className={BlogStyles.load}>
+                <div className={BlogStyles.image}></div>
+                <div className={BlogStyles.paragraph}></div>
+              </div>
+            </SwiperSlide>
+            <SwiperSlide className={BlogStyles.loading}>
+              <div className={BlogStyles.load}>
+                <div className={BlogStyles.image}></div>
+                <div className={BlogStyles.paragraph}></div>
+              </div>
+            </SwiperSlide>
+            <SwiperSlide className={BlogStyles.loading}>
+              <div className={BlogStyles.load}>
+                <div className={BlogStyles.image}></div>
+                <div className={BlogStyles.paragraph}></div>
+              </div>
+            </SwiperSlide>
+            <SwiperSlide className={BlogStyles.loading}>
+              <div className={BlogStyles.load}>
+                <div className={BlogStyles.image}></div>
+                <div className={BlogStyles.paragraph}></div>
+              </div>
+            </SwiperSlide>
+          </>
+        )}
+        {blogs.map((d, i) => {
+          const { title, date, description, cover } = d;
+          return (
+            <SwiperSlide key={i}>
+              <div className={BlogStyles.container}>
+                <img src={cover} alt="cover" />
+                <h2>{title}</h2>
+                <span>{date}</span>
+                <p className={description.length >= 20 ? BlogStyles.fade : ""}>
+                  {description}
+                </p>
+                <GoArrowLeft color="#FF8B00" fontSize="2rem" />
+              </div>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
       <div className={BlogStyles.swiperButtons}>
         <div className={BlogStyles.pagination}>
