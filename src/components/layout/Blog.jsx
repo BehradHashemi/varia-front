@@ -11,6 +11,7 @@ import { GoArrowLeft } from "react-icons/go";
 import { useEffect, useState } from "react";
 
 import BlogsData from "../../Data/Blog.json";
+import { Link } from "react-router-dom";
 
 function Blog() {
   const [blogs, setBlogs] = useState([]);
@@ -106,7 +107,9 @@ function Blog() {
                 <p className={description.length >= 20 ? BlogStyles.fade : ""}>
                   {description}
                 </p>
-                <GoArrowLeft color="#FF8B00" fontSize="2rem" />
+                <Link to="/">
+                  <GoArrowLeft color="#FF8B00" fontSize="2rem" />
+                </Link>
               </div>
             </SwiperSlide>
           );

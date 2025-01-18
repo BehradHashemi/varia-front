@@ -15,8 +15,6 @@ function Service() {
   useEffect(() => {
     setServices(servicesData.Services);
   }, []);
-  console.log(services);
-
   const pagination = {
     clickable: true,
     renderBullet: function (index, className) {

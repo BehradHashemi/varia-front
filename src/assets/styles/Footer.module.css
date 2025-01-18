@@ -1,0 +1,33 @@
+.footer {
+  width: 100%;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-align: right;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 20px;
+}
+
+.footer li {
+  margin: 10px auto;
+}
+
+.footer .instagram img {
+  background-color: #bd69ff0f;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.footer .telegram img {
+  background-color: #4fa2ff0f;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.sectionLinks ul {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
