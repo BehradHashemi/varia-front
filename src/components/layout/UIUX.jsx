@@ -1,7 +1,7 @@
 import UIUXStyles from "../../assets/styles/UIUX.module.css";
 import UIUXImage from "../../assets/Picture/Banner_UIUX.png";
 import { FaArrowLeft } from "react-icons/fa";
-import { Link } from "react-router-dom";
+ 
 
 function UIUX() {
   return (
@@ -16,10 +16,10 @@ function UIUX() {
           اصولی، زیبا و با تجربه کاربری لذت بخش برای وبسایت خود داشته باشید.
         </p>
         <div className={UIUXStyles.buttons}>
-          <Link to="/resume">
+          <a href="/resume">
             نمونه کار ها
             <FaArrowLeft style={{ marginRight: "10px" }} />
-          </Link>
+          </a>
         </div>
       </main>
     </div>

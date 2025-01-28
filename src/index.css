@@ -7,7 +7,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "YekanBakh";
+  font-family: "YekanBakh" !important;
   scroll-behavior: smooth;
   scrollbar-width: thin;
 }
@@ -29,8 +29,13 @@ body {
   margin: 0 auto;
   padding: 0 10px;
   user-select: none;
+  overflow-x: hidden;
 }
 
 li {
   list-style: none;
+}
+
+input[type="text"] {
+  text-align: right !important;
 }

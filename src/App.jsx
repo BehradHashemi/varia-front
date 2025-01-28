@@ -5,7 +5,8 @@ import HomePage from "./components/Home/HomePage";
 import { useState, useEffect } from "react";
 import Loading from "./Loading";
 import Footer from "./components/layout/Footer";
-import styled from "styled-components";
+import Register from "./components/shared/Authentication/Register";
+import LoginForm from "./components/shared/Authentication/Login";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,7 +18,7 @@ function App() {
     });
     setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 1300);
   }, []);
 
   if (isLoading) {
@@ -28,24 +29,29 @@ function App() {
       </>
     );
   }
-  const Div = styled.div`
-    width: 100%;
-    background: #ffffff;
-    text-align: center;
-  `;
   return (
     <>
       <Header></Header>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
       <Footer></Footer>
-      <Div>
+      <div
+        style={{
+          width: "100%",
+          background: "#ffffff",
+          textAlign: "center",
+        }}
+      >
         <h4>
           طراحی شده با ❤️ توسط{" "}
-          <a href="https://behrad.liara.run">بهراد هاشمی</a>
+          <a href="https://behrad.liara.run" target="_blank">
+            بهراد هاشمی
+          </a>
         </h4>
-      </Div>
+      </div>
     </>
   );
 }

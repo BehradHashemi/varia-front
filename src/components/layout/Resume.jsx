@@ -1,7 +1,7 @@
 import ResumeStyles from "../../assets/styles/Resume.module.css";
 import ResumeImage from "../../assets/Picture/Banner_Run.png";
 import { FaArrowLeft } from "react-icons/fa";
-import { Link } from "react-router-dom";
+ 
 function Resume() {
   return (
     <div className={ResumeStyles.container}>
@@ -17,10 +17,10 @@ function Resume() {
           جذب کنید.
         </p>
         <div className={ResumeStyles.buttons}>
-          <Link to="/resume">
+          <a href="/resume">
             نمونه کار ها
             <FaArrowLeft style={{ marginRight: "10px" }} />
-          </Link>
+          </a>
         </div>
       </main>
     </div>

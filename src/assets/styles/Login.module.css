@@ -1,0 +1,130 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 24px;
+}
+
+.formContainer {
+  width: fit-content;
+  padding: 50px;
+  margin: 50px;
+  border-radius: 10px;
+  height: fit-content;
+  background-color: #fbfbfb;
+  -webkit-box-shadow: 0px 0px 29px 1px #cccccccc;
+  -moz-box-shadow: 0px 0px 29px 1px #cccccccc;
+  box-shadow: 0px 0px 29px 1px #cccccccc;
+}
+
+.header {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 10px;
+  color: #ff8b00;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  height: 75px;
+}
+
+.formField .label {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px;
+  color: #555555;
+  font-size: 1.2rem;
+}
+
+.formInput {
+  width: 300px;
+  height: 60px;
+  border-radius: 5px;
+  padding: 6px 10px;
+  border: 1px solid #c0c0c0;
+}
+
+.uncompleted {
+  width: 300px;
+  height: 60px;
+  border-radius: 5px;
+  padding: 6px 10px;
+  border: 1px solid #ff0000;
+  transition: all 0.2s ease-in;
+}
+
+.formField span {
+  height: 20px;
+  margin: 5px;
+  width: fit-content;
+  font-size: 0.9rem;
+  color: #ff0000;
+  padding: 2px 3px;
+  border-radius: 3px;
+  background-color: rgba(255, 0, 0, 0.175);
+}
+
+.formInput:focus,
+.uncompleted:focus {
+  outline: none;
+  line-height: 30px;
+  height: 60px;
+  border: 1px solid #374bff;
+}
+
+.formButtons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.formButtons button {
+  background-color: #ff8b00;
+  padding: 10px 20px;
+  color: #fff;
+  border-radius: 5px;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.1s ease-in;
+  cursor: pointer;
+}
+
+.formButtons button:hover {
+  background-color: #ff8b00;
+}
+
+.formButtons a {
+  color: #ff8b00;
+  text-decoration: none;
+  transition: all 0.1s ease-in;
+  font-weight: 700;
+}
+
+.formButtons a:hover {
+  color: #ff8b00;
+}
+
+@media (max-width: 440px) {
+  .formContainer {
+    padding: 20px;
+    margin: 50px 20px;
+  }
+
+  .formContainer {
+    width: 100%;
+  }
+
+  .formInput {
+    width: 100%;
+  }
+
+  .uncompleted {
+    width: 100%;
+  }
+}

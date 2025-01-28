@@ -1,7 +1,7 @@
 import SupportStyles from "../../assets/styles/Support.module.css";
 import SupportImage from "../../assets/Picture/Banner_Support.png";
 import { FaArrowLeft } from "react-icons/fa";
-import { Link } from "react-router-dom";
+ 
 
 function Support() {
   return (
@@ -17,10 +17,10 @@ function Support() {
           شما را به نتایج اول گوگل برسانیم.
         </p>
         <div className={SupportStyles.buttons}>
-          <Link to="/support">
+          <a href="/support">
             نمونه کار ها
             <FaArrowLeft style={{ marginRight: "10px" }} />
-          </Link>
+          </a>
         </div>
       </main>
       <img src={SupportImage} alt="banner-3" />

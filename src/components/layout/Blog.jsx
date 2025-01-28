@@ -11,7 +11,7 @@ import { GoArrowLeft } from "react-icons/go";
 import { useEffect, useState } from "react";
 
 import BlogsData from "../../Data/Blog.json";
-import { Link } from "react-router-dom";
+ 
 
 function Blog() {
   const [blogs, setBlogs] = useState([]);
@@ -57,9 +57,6 @@ function Blog() {
         }
         breakpoints={{
           640: {
-            slidesPerView: 1,
-          },
-          768: {
             slidesPerView: 2,
           },
           1024: {
@@ -107,9 +104,9 @@ function Blog() {
                 <p className={description.length >= 20 ? BlogStyles.fade : ""}>
                   {description}
                 </p>
-                <Link to="/">
+                <a href="/">
                   <GoArrowLeft color="#FF8B00" fontSize="2rem" />
-                </Link>
+                </a>
               </div>
             </SwiperSlide>
           );
