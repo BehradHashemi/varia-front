@@ -44,13 +44,13 @@
 }
 @keyframes MoveLeftRight {
   0% {
-    transform: translateX(-10px);
+    transform: translateX(10px);
   }
   50% {
     transform: translateX(0px);
   }
   100% {
-    transform: translateX(-10px);
+    transform: translateX(10px);
   }
 }
 @media (width <= 1000px) {

@@ -11,7 +11,8 @@ import { GoArrowLeft } from "react-icons/go";
 import { useEffect, useState } from "react";
 
 import BlogsData from "../../Data/Blog.json";
- 
+import { Link } from "react-router-dom";
+import e2p from "../../utils/persianNumber";
 
 function Blog() {
   const [blogs, setBlogs] = useState([]);
@@ -94,19 +95,18 @@ function Blog() {
           </>
         )}
         {blogs.map((d, i) => {
-          const { title, date, description, cover } = d;
+          const { title, date, description, cover, id } = d;
+
           return (
-            <SwiperSlide key={i}>
+            <SwiperSlide key={id}>
               <div className={BlogStyles.container}>
                 <img src={cover} alt="cover" />
                 <h2>{title}</h2>
-                <span>{date}</span>
-                <p className={description.length >= 20 ? BlogStyles.fade : ""}>
-                  {description}
-                </p>
-                <a href="/">
+                <span>{e2p(date)}</span>
+                <p>{description.slice(0, 50)} ...</p>
+                <Link to={`/blogs/${id}`}>
                   <GoArrowLeft color="#FF8B00" fontSize="2rem" />
-                </a>
+                </Link>
               </div>
             </SwiperSlide>
           );

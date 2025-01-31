@@ -1,4 +1,4 @@
- 
+import { Link } from "react-router-dom";
 import FooterStyles from "../../assets/styles/Footer.module.css";
 
 import enamad from "/enamad.png";
@@ -16,13 +16,13 @@ function Footer() {
           <h3>دسترسی سریع</h3>
           <ul>
             <li>
-              <a href="/">صفحه اصلی</a>
+              <Link to="/">صفحه اصلی</Link>
             </li>
             <li>
-              <a href="/login">حساب کاربری</a>
+              <Link to="/login">حساب کاربری</Link>
             </li>
             <li>
-              <a href="/">تماس با ما</a>
+              <Link to="/">تماس با ما</Link>
             </li>
           </ul>
         </div>
@@ -41,14 +41,14 @@ function Footer() {
         <h3 style={{ textAlign: "center" }}>از اخبار باخبر شو</h3>
         <ul>
           <li>
-            <a href="/" className={FooterStyles.instagram}>
+            <Link to="/" className={FooterStyles.instagram}>
               <img src={instagram} alt="اینستاگرام" />
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/" className={FooterStyles.telegram}>
+            <Link to="/" className={FooterStyles.telegram}>
               <img src={telegram} alt="تلگرام" />
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

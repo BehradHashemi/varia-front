@@ -1,12 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { TextField, Button, Box, Typography, Paper } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+  const [siteSettings, setSiteSettings] = useState({ adminEmail: "admin@example.com", adminPassword: "admin123" });
+
+  useEffect(() => {
+    const storedSettings = JSON.parse(localStorage.getItem("siteSettings"));
+    if (storedSettings) {
+      setSiteSettings(storedSettings);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem("user")) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -22,126 +38,66 @@ const LoginForm = () => {
     }),
     onSubmit: (values) => {
       const storedUser = JSON.parse(localStorage.getItem("user"));
-      const email = values.email;
-      const password = values.password;
-      if (
-        storedUser &&
-        storedUser.email === email &&
-        storedUser.password === password
-      ) {
-        toast.success("ورود موفقیت‌آمیز بود!", {
+      if (storedUser && storedUser.email === values.email) {
+        toast.success(`${storedUser.name} عزیز خوش آمدید!`, {
           position: "top-center",
-          autoClose: 3000,
+          autoClose: 2000,
         });
-      } else {
-        toast.error("ایمیل یا رمز عبور اشتباه است.", {
+        setTimeout(() => navigate("/dashboard"), 2000);
+      } else if (values.email === siteSettings.adminEmail && values.password === siteSettings.adminPassword) {
+        localStorage.setItem("user", JSON.stringify({ name: "مدیر", email: values.email, userType: "admin" }));
+        toast.success("ورود ادمین موفقیت‌آمیز بود!", {
           position: "top-center",
-          autoClose: 3000,
+          autoClose: 2000,
+        });
+        setTimeout(() => navigate("/admin-panel"), 2000);
+      } else {
+        toast.error("ایمیل یا رمز عبور اشتباه است!", {
+          position: "top-center",
+          autoClose: 2500,
         });
       }
     },
   });
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        direction: "rtl",
-        padding: 2,
-      }}
-    >
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", direction: "rtl", padding: 2 }}>
       <ToastContainer rtl />
       <Paper
         elevation={6}
         sx={{
-          padding: 4,
+          p: 4,
           borderRadius: 3,
           width: "100%",
           maxWidth: "400px",
+          textAlign: "center",
           backgroundColor: "#ffffff",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Typography
-          variant="h4"
-          mb={3}
-          sx={{
-            textAlign: "right",
-            color: "#333",
-            fontWeight: "bold",
-          }}
-        >
-          فرم ورود
+        <Typography variant="h4" mb={3} fontWeight="bold" color="#333">
+          ورود به حساب
         </Typography>
-        <Box
-          component="form"
-          onSubmit={formik.handleSubmit}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            textAlign: "right", // تنظیم متن به راست
-          }}
-        >
+        <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
-            id="email"
-            name="email"
             label="ایمیل"
-            variant="outlined"
-            fullWidth
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
+            {...formik.getFieldProps("email")}
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
-            sx={{
-              paddingLeft: "5px",
-              textAlign: "right",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-              "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#1976d2",
-              },
-            }}
           />
           <TextField
-            id="password"
-            name="password"
             label="رمز عبور"
             type="password"
-            variant="outlined"
-            fullWidth
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
+            {...formik.getFieldProps("password")}
             error={formik.touched.password && Boolean(formik.errors.password)}
             helperText={formik.touched.password && formik.errors.password}
-            sx={{
-              paddingLeft: "5px",
-              textAlign: "right",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-              "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#1976d2",
-              },
-            }}
           />
           <Button
             type="submit"
             variant="contained"
-            color="primary"
-            fullWidth
             sx={{
               backgroundColor: "#1976d2",
-              padding: "10px 0",
-              fontSize: "16px",
-              fontWeight: "bold",
-              borderRadius: 3,
+              borderRadius: 2,
               boxShadow: "0 4px 10px rgba(25, 118, 210, 0.5)",
               "&:hover": {
                 backgroundColor: "#1565c0",
@@ -151,7 +107,7 @@ const LoginForm = () => {
           >
             ورود
           </Button>
-          <Link to="/register">حساب کاربری ندارید؟</Link>
+          <Link to="/register">حساب کاربری ندارید؟ ثبت نام کنید</Link>
         </Box>
       </Paper>
     </Box>

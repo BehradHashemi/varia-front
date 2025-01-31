@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import "../../assets/styles/Header.css";
-
 import { BiMenuAltRight } from "react-icons/bi";
 import { GoPerson } from "react-icons/go";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
@@ -9,6 +8,31 @@ import { HiMenuAlt3 } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 function Header() {
   const [menuOpen, setMenuOpen] = useState(true);
+  const [user, setUser] = useState(
+    () => JSON.parse(localStorage.getItem("user")) || null
+  );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUser(JSON.parse(localStorage.getItem("user")) || null);
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUser(JSON.parse(localStorage.getItem("user")) || null);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+  };
   return (
     <div className="header">
       {/* NavBar on Computer or Tablet */}
@@ -18,9 +42,9 @@ function Header() {
           <BiMenuAltRight style={{ fontSize: "1.5rem" }} /> لیست خدمات
         </NavLink>
         <NavLink to="/">صفحه اصلی</NavLink>
-        <NavLink to="/resume">نمونه کار</NavLink>
+        <NavLink to="/gallery">نمونه کار</NavLink>
         <NavLink to="/contact">تماس با ما</NavLink>
-        <NavLink to="/blog">وبلاگ</NavLink>
+        <NavLink to="/blogs">وبلاگ</NavLink>
       </nav>
       <HiMenuAlt3
         className="menu"
@@ -41,20 +65,62 @@ function Header() {
           <BiMenuAltRight style={{ fontSize: "1.5rem" }} /> لیست خدمات
         </NavLink>
         <NavLink to="/">صفحه اصلی</NavLink>
-        <NavLink to="/resume">نمونه کار</NavLink>
+        <NavLink to="/gallery">نمونه کار</NavLink>
         <NavLink to="/contact">تماس با ما</NavLink>
-        <NavLink to="/blog">وبلاگ</NavLink>
+        <NavLink to="/blogs">وبلاگ</NavLink>
       </nav>
 
       <div id="btn_group">
-        <NavLink to="/login" id="login">
-          <GoPerson />
-          <span>|</span>
-          ورود / ثبت نام
-        </NavLink>
-        <NavLink to="/cart" id="cart">
-          <HiOutlineShoppingBag />
-        </NavLink>
+        {user ? (
+          <div
+            className="user-info"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "6px 11px 6px 11px",
+              borderRadius: "12px",
+            }}
+          >
+            <Link
+              to="/dashboard"
+              style={{ fontWeight: "bold", fontSize: "1rem", color: "#000" }}
+            >
+              {user.name}
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="logout-btn"
+              style={{
+                backgroundColor: "#FF3B3B",
+                color: "#fff",
+                padding: "10px 25px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "bold",
+                transition: "0.3s",
+                "&:hover": { backgroundColor: "#D32F2F" },
+              }}
+            >
+              خروج
+            </button>
+            <NavLink to="/cart" id="cart">
+              <HiOutlineShoppingBag />
+            </NavLink>
+          </div>
+        ) : (
+          <div id="btn_group">
+            <NavLink to="/login" id="login">
+              <GoPerson />
+              <span>|</span>
+              ورود / ثبت نام
+            </NavLink>
+            <NavLink to="/cart" id="cart">
+              <HiOutlineShoppingBag />
+            </NavLink>
+          </div>
+        )}
       </div>
     </div>
   );
