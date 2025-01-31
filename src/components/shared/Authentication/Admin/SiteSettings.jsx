@@ -22,46 +22,38 @@ const SiteSettings = () => {
     maintenanceMode: false,
     allowRegistration: true,
     themeColor: "#374BFF",
-    adminEmail: "admin@example.com",
-    adminPassword: "admin123",
+    adminEmail: "",
+    adminPassword: "",
   });
 
   useEffect(() => {
-    const storedSettings = JSON.parse(localStorage.getItem("siteSettings"));
-    if (storedSettings) {
-      setSettings(storedSettings);
-      document.documentElement.style.setProperty(
-        "--theme-color",
-        storedSettings.themeColor
-      );
-    }
+    fetch("/adminConfig.json")
+      .then((response) => response.json())
+      .then((data) => setSettings(data))
+      .catch((error) => console.error("Error loading site settings:", error));
   }, []);
 
-  const handleSave = () => {
-    localStorage.setItem("siteSettings", JSON.stringify(settings));
-    document.documentElement.style.setProperty(
-      "--theme-color",
-      settings.themeColor
-    );
+  const handleSave = async () => {
+    const updatedSettings = { ...settings };
+    await fetch("https://fronck.storage.c2.liara.space/adminConfig.json", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedSettings),
+    });
     alert("تنظیمات ذخیره شد!");
   };
-
-  const handleLogin = (email, password) => {
-    const storedSettings = JSON.parse(localStorage.getItem("siteSettings"));
-    if (
-      storedSettings &&
-      email === storedSettings.adminEmail &&
-      password === storedSettings.adminPassword
-    ) {
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ name: "مدیر", email, userType: "admin" })
-      );
-      navigate("/admin-panel");
+  
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?.userType === "admin") {
+      setUser(storedUser);
     } else {
-      alert("ایمیل یا رمز عبور نادرست است!");
+      navigate("/dashboard");
     }
-  };
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -74,9 +66,8 @@ const SiteSettings = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        direction: "rtl",
-        padding: 2,
+        margin: "15px auto",
+        p: 1,
       }}
     >
       <Paper
@@ -127,20 +118,6 @@ const SiteSettings = () => {
           }
           label="فعال کردن ثبت‌نام کاربران"
         />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>رنگ‌بندی سایت</InputLabel>
-          <Select
-            value={settings.themeColor}
-            onChange={(e) =>
-              setSettings({ ...settings, themeColor: e.target.value })
-            }
-          >
-            <MenuItem value="#374BFF">آبی</MenuItem>
-            <MenuItem value="#FF5733">قرمز</MenuItem>
-            <MenuItem value="#4CAF50">سبز</MenuItem>
-            <MenuItem value="#FFC107">زرد</MenuItem>
-          </Select>
-        </FormControl>
         <Typography variant="h6" fontWeight="bold" mt={3}>
           اطلاعات ورود ادمین
         </Typography>

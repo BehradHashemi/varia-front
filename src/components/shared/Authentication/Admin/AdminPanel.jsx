@@ -28,9 +28,8 @@ const AdminPanel = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        direction: "rtl",
-        padding: 2,
+        margin: "15px auto",
+        p: 1,
       }}
     >
       <Paper
@@ -39,7 +38,7 @@ const AdminPanel = () => {
           p: 4,
           borderRadius: 3,
           width: "100%",
-          maxWidth: "600px",
+          maxWidth: "500px",
           textAlign: "center",
         }}
       >
@@ -62,8 +61,8 @@ const AdminPanel = () => {
               fullWidth
               variant="contained"
               color="primary"
-              startIcon={<MdOutlineArticle />}
-              onClick={() => navigate("/manage-articles")}
+              startIcon={<MdOutlineArticle style={{ marginLeft: "4px" }}/>}
+              onClick={() => navigate("/manage-blogs")}
             >
               مدیریت مقالات
             </Button>
@@ -73,7 +72,7 @@ const AdminPanel = () => {
               fullWidth
               variant="contained"
               color="secondary"
-              startIcon={<MdPeople />}
+              startIcon={<MdPeople style={{ marginLeft: "4px" }}/>}
               onClick={() => navigate("/manage-users")}
             >
               مدیریت کاربران
@@ -84,7 +83,7 @@ const AdminPanel = () => {
               fullWidth
               variant="contained"
               color="warning"
-              startIcon={<MdSettings />}
+              startIcon={<MdSettings style={{ marginLeft: "4px" }}/>}
               onClick={() => navigate("/site-settings")}
             >
               تنظیمات سایت
@@ -95,7 +94,7 @@ const AdminPanel = () => {
           fullWidth
           variant="outlined"
           color="error"
-          startIcon={<HiOutlineLogout />}
+          startIcon={<HiOutlineLogout style={{ marginLeft: "4px" }}/>}
           onClick={handleLogout}
           sx={{ mt: 3 }}
         >

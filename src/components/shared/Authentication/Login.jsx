@@ -6,15 +6,32 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from "react-router-dom";
 
-const LoginForm = () => {
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import { prefixer } from "stylis";
+import rtlPlugin from "stylis-plugin-rtl";
+const rtlCache = createCache({
+  key: "muirtl",
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
+const Login = () => {
   const navigate = useNavigate();
-  const [siteSettings, setSiteSettings] = useState({ adminEmail: "admin@example.com", adminPassword: "admin123" });
+  const [siteSettings, setSiteSettings] = useState(null);
 
   useEffect(() => {
-    const storedSettings = JSON.parse(localStorage.getItem("siteSettings"));
-    if (storedSettings) {
-      setSiteSettings(storedSettings);
-    }
+    fetch("https://fronck.storage.c2.liara.space/adminConfig.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to load admin config");
+        }
+        return response.json();
+      })
+      .then((data) => setSiteSettings(data))
+      .catch((error) => {
+        console.error("Error loading admin config:", error);
+        toast.error("خطا در دریافت تنظیمات ورود ادمین!");
+      });
   }, []);
 
   useEffect(() => {
@@ -37,6 +54,11 @@ const LoginForm = () => {
         .required("وارد کردن رمز عبور الزامی است"),
     }),
     onSubmit: (values) => {
+      if (!siteSettings) {
+        toast.error("تنظیمات ورود بارگذاری نشده است!");
+        return;
+      }
+
       const storedUser = JSON.parse(localStorage.getItem("user"));
       if (storedUser && storedUser.email === values.email) {
         toast.success(`${storedUser.name} عزیز خوش آمدید!`, {
@@ -44,8 +66,18 @@ const LoginForm = () => {
           autoClose: 2000,
         });
         setTimeout(() => navigate("/dashboard"), 2000);
-      } else if (values.email === siteSettings.adminEmail && values.password === siteSettings.adminPassword) {
-        localStorage.setItem("user", JSON.stringify({ name: "مدیر", email: values.email, userType: "admin" }));
+      } else if (
+        values.email === siteSettings.adminEmail &&
+        values.password === siteSettings.adminPassword
+      ) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            name: "مدیر",
+            email: values.email,
+            userType: "admin",
+          })
+        );
         toast.success("ورود ادمین موفقیت‌آمیز بود!", {
           position: "top-center",
           autoClose: 2000,
@@ -61,7 +93,16 @@ const LoginForm = () => {
   });
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", direction: "rtl", padding: 2 }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        direction: "rtl",
+        padding: 2,
+      }}
+    >
       <ToastContainer rtl />
       <Paper
         elevation={6}
@@ -78,40 +119,46 @@ const LoginForm = () => {
         <Typography variant="h4" mb={3} fontWeight="bold" color="#333">
           ورود به حساب
         </Typography>
-        <Box component="form" onSubmit={formik.handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="ایمیل"
-            {...formik.getFieldProps("email")}
-            error={formik.touched.email && Boolean(formik.errors.email)}
-            helperText={formik.touched.email && formik.errors.email}
-          />
-          <TextField
-            label="رمز عبور"
-            type="password"
-            {...formik.getFieldProps("password")}
-            error={formik.touched.password && Boolean(formik.errors.password)}
-            helperText={formik.touched.password && formik.errors.password}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{
-              backgroundColor: "#1976d2",
-              borderRadius: 2,
-              boxShadow: "0 4px 10px rgba(25, 118, 210, 0.5)",
-              "&:hover": {
-                backgroundColor: "#1565c0",
-                boxShadow: "0 6px 15px rgba(21, 101, 192, 0.6)",
-              },
-            }}
+        <CacheProvider value={rtlCache}>
+          <Box
+            component="form"
+            onSubmit={formik.handleSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
-            ورود
-          </Button>
-          <Link to="/register">حساب کاربری ندارید؟ ثبت نام کنید</Link>
-        </Box>
+            <TextField
+              label="ایمیل"
+              {...formik.getFieldProps("email")}
+              error={formik.touched.email && Boolean(formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
+            />
+            <TextField
+              label="رمز عبور"
+              type="password"
+              {...formik.getFieldProps("password")}
+              error={formik.touched.password && Boolean(formik.errors.password)}
+              helperText={formik.touched.password && formik.errors.password}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                backgroundColor: "#1976d2",
+                borderRadius: 2,
+                boxShadow: "0 4px 10px rgba(25, 118, 210, 0.5)",
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                  boxShadow: "0 6px 15px rgba(21, 101, 192, 0.6)",
+                },
+              }}
+            >
+              ورود
+            </Button>
+            <Link to="/register">حساب کاربری ندارید؟ ثبت نام کنید</Link>
+          </Box>
+        </CacheProvider>
       </Paper>
     </Box>
   );
 };
 
-export default LoginForm;
+export default Login;

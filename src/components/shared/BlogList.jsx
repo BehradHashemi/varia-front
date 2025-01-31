@@ -16,9 +16,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
-import { Link } from "react-router-dom";
 import blogs from "../../Data/Blog.json";
-import e2p from "../../utils/persianNumber";
 
 const BlogCard = lazy(() => import("./BlogCard"));
 
@@ -59,7 +57,7 @@ const BlogList = () => {
       <Box
         sx={{
           display: "flex",
-          gap: 2,
+          gap: 1,
           mb: 4,
           flexDirection: { xs: "column", sm: "row" },
         }}
@@ -105,7 +103,7 @@ const BlogList = () => {
         </FormControl>
       </Box>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={3}>
         <Suspense fallback={<div>در حال بارگذاری...</div>}>
           {filteredBlogs.map((blog) => (
             <BlogCard key={blog.id} blog={blog} />

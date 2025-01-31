@@ -33,9 +33,8 @@ const Dashboard = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        direction: "rtl",
-        padding: 2,
+        margin: "15px auto",
+        p: 1,
       }}
     >
       <Paper
@@ -73,7 +72,9 @@ const Dashboard = () => {
                 fullWidth
                 variant="contained"
                 color="warning"
-                startIcon={<MdAdminPanelSettings />}
+                startIcon={
+                  <MdAdminPanelSettings style={{ marginLeft: "4px" }} />
+                }
                 onClick={() => navigate("/admin-panel")}
               >
                 مدیریت سایت
@@ -86,8 +87,8 @@ const Dashboard = () => {
                 fullWidth
                 variant="contained"
                 color="success"
-                startIcon={<MdCreate />}
-                onClick={() => navigate("/create-article")}
+                startIcon={<MdCreate style={{ marginLeft: "4px" }}/>}
+                onClick={() => navigate("/write-blog")}
               >
                 نوشتن مقاله جدید
               </Button>
@@ -98,8 +99,8 @@ const Dashboard = () => {
               fullWidth
               variant="contained"
               color="primary"
-              startIcon={<MdOutlineArticle />}
-              onClick={() => navigate("/my-articles")}
+              startIcon={<MdOutlineArticle style={{ marginLeft: "4px" }}/>}
+              onClick={() => navigate("/my-blogs")}
             >
               مقالات من
             </Button>
@@ -109,8 +110,8 @@ const Dashboard = () => {
               fullWidth
               variant="contained"
               color="secondary"
-              startIcon={<MdShoppingCart />}
-              onClick={() => navigate("/my-orders")}
+              startIcon={<MdShoppingCart style={{ marginLeft: "4px" }}/>}
+              onClick={() => navigate("/cart")}
             >
               خریدهای من
             </Button>
@@ -120,7 +121,7 @@ const Dashboard = () => {
           fullWidth
           variant="outlined"
           color="error"
-          startIcon={<HiOutlineLogout />}
+          startIcon={<HiOutlineLogout style={{ marginLeft: "4px" }}/>}
           onClick={handleLogout}
           sx={{ mt: 3 }}
         >

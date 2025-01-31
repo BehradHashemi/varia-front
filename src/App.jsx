@@ -12,6 +12,10 @@ import BlogList from "./components/shared/BlogList";
 import DetailBlog from "./components/shared/DetailBlog";
 import ContactUs from "./components/shared/ContactUs";
 import Gallery from "./components/shared/Gallery";
+import WriteBlog from "./components/shared/Authentication/WriteBlog";
+import MyBlogs from "./components/shared/MyBlogs";
+import ManageBlogs from "./components/shared/Authentication/Admin/MangeBlogs";
+import ManageUsers from "./components/shared/Authentication/Admin/ManageUsers";
 
 function App() {
   return (
@@ -21,9 +25,13 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/site-settings" element={<SiteSettings />} />
+        <Route path="/manage-blogs" element={<ManageBlogs />} />
+        <Route path="/manage-users" element={<ManageUsers />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/write-blog" element={<WriteBlog />} />
+        <Route path="/my-blogs" element={<MyBlogs />} />
         <Route path="/blogs" element={<BlogList />} />
         <Route path="/blogs/:id" element={<DetailBlog />} />
         <Route path="/contact" element={<ContactUs />} />
