@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
@@ -6,6 +6,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 import moment from "moment-jalaali";
 import e2p from "../../../utils/persianNumber";
+
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -18,6 +25,16 @@ const rtlCache = createCache({
 
 const WriteBlog = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?.userType === "writer" || storedUser?.userType === "admin") {
+      setUser(storedUser);
+    } else {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
   const [blog, setBlog] = useState({
     title: "",
     content: "",
@@ -43,7 +60,7 @@ const WriteBlog = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!blog.title || !blog.content || !blog.author) {
       toast.error("تمام فیلدهای الزامی باید پر شوند.", {
@@ -52,14 +69,23 @@ const WriteBlog = () => {
       return;
     }
 
-    const savedBlogs = JSON.parse(localStorage.getItem("blogs")) || [];
-    savedBlogs.push(blog);
-    localStorage.setItem("blogs", JSON.stringify(savedBlogs));
+    try {
+      const { data, error } = await supabase
+        .from("Fronck-Blogs") // نام جدول در Supabase
+        .insert([blog])
+        .select();
 
-    toast.success("مقاله در انتظار تایید قرار گرفت.", {
-      position: "top-center",
-    });
-    setTimeout(() => navigate("/my-blogs"), 2000);
+      if (error) throw error;
+
+      toast.success("مقاله در انتظار تایید قرار گرفت.", {
+        position: "top-center",
+      });
+      setTimeout(() => navigate("/my-blogs"), 2000);
+    } catch (error) {
+      toast.error("خطا در ذخیره مقاله!", {
+        position: "top-center",
+      });
+    }
   };
 
   return (

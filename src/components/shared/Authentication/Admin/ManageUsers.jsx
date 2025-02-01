@@ -23,6 +23,12 @@ import { Delete, Add, Edit } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -36,14 +42,6 @@ const rtlCache = createCache({
 const ManageUsers = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser?.userType === "admin") {
-      setUser(storedUser);
-    } else {
-      navigate("/dashboard");
-    }
-  }, [navigate]);
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -52,51 +50,97 @@ const ManageUsers = () => {
     name: "",
     email: "",
     password: "",
-    role: "user",
+    confirmPassword: "",
+    userType: "user",
   });
   const [editUser, setEditUser] = useState({
     name: "",
     email: "",
-    role: "user",
     password: "",
+    confirmPassword: "",
+    userType: "user",
   });
 
   useEffect(() => {
-    const savedUsers = JSON.parse(localStorage.getItem("users")) || [];
-    setUsers(savedUsers);
-  }, []);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser?.userType === "admin") {
+      setUser(storedUser);
+      fetchUsers();
+    } else {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
-  const handleDelete = (index) => {
-    const updatedUsers = users.filter((_, i) => i !== index);
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    toast.error("کاربر حذف شد.");
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase.from("Fronck-Users").select("*");
+      if (error) throw error;
+      setUsers(data);
+    } catch (error) {
+      toast.error("خطا در دریافت کاربران!");
+    }
   };
 
-  const handleAddUser = () => {
-    if (!newUser.name || !newUser.email || !newUser.password) {
+  const handleDelete = async (id) => {
+    try {
+      const { error } = await supabase.from("Fronck-Users").delete().eq("id", id);
+      if (error) throw error;
+      fetchUsers();
+      toast.error("کاربر حذف شد.");
+    } catch (error) {
+      toast.error("خطا در حذف کاربر!");
+    }
+  };
+
+  const handleAddUser = async () => {
+    if (
+      !newUser.name ||
+      !newUser.email ||
+      !newUser.password ||
+      !newUser.confirmPassword ||
+      newUser.password !== newUser.confirmPassword
+    ) {
       toast.warning("لطفاً تمامی فیلدها را پر کنید.");
       return;
     }
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setOpen(false);
-    setNewUser({ name: "", email: "", password: "", role: "user" });
-    toast.success("کاربر جدید اضافه شد.");
+    try {
+      const { data, error } = await supabase
+        .from("Fronck-Users")
+        .insert([newUser])
+        .select();
+      if (error) throw error;
+      fetchUsers();
+      setOpen(false);
+      setNewUser({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        userType: "user",
+      });
+      toast.success("کاربر جدید اضافه شد.");
+    } catch (error) {
+      toast.error("خطا در افزودن کاربر!");
+    }
   };
 
-  const handleEditUser = () => {
+  const handleEditUser = async () => {
     if (!editUser.name || !editUser.email) {
       toast.warning("لطفاً تمامی فیلدها را پر کنید.");
       return;
     }
-    const updatedUsers = [...users];
-    updatedUsers[selectedIndex] = editUser;
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setEditOpen(false);
-    toast.info("اطلاعات کاربر به‌روز شد.");
+    try {
+      const { error } = await supabase
+        .from("Fronck-Users")
+        .update(editUser)
+        .eq("id", editUser.id);
+      if (error) throw error;
+      fetchUsers();
+      setEditOpen(false);
+      toast.info("اطلاعات کاربر به‌روز شد.");
+    } catch (error) {
+      toast.error("خطا در به‌روزرسانی کاربر!");
+    }
   };
 
   return (
@@ -155,7 +199,7 @@ const ManageUsers = () => {
             {users.map((user, index) => (
               <>
                 <ListItem
-                  key={index}
+                  key={user.id}
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -188,15 +232,21 @@ const ManageUsers = () => {
                     </Box>
                   </Box>
                   <Chip
-                    label={user.role === "writer" ? "نویسنده" : "کاربر عادی"}
-                    color={user.role === "writer" ? "secondary" : "default"}
+                    label={
+                      user.userType === "admin"
+                        ? "ادمین"
+                        : user?.userType === "writer"
+                        ? "نویسنده"
+                        : "کاربر عادی"
+                    }
+                    color={user.userType === "writer" ? "secondary" : "default"}
                     variant="outlined"
                   />
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <Button
                       variant="contained"
                       color="warning"
-                      startIcon={<Edit style={{ marginLeft: "5px" }}/>}
+                      startIcon={<Edit style={{ marginLeft: "5px" }} />}
                       onClick={() => {
                         setEditOpen(true);
                         setSelectedIndex(index);
@@ -208,8 +258,8 @@ const ManageUsers = () => {
                     <Button
                       variant="contained"
                       color="error"
-                      startIcon={<Delete style={{ marginLeft: "5px" }}/>}
-                      onClick={() => handleDelete(index)}
+                      startIcon={<Delete style={{ marginLeft: "5px" }} />}
+                      onClick={() => handleDelete(user.id)}
                     >
                       حذف
                     </Button>
@@ -253,12 +303,22 @@ const ManageUsers = () => {
                 setNewUser({ ...newUser, password: e.target.value })
               }
             />
+            <TextField
+              label="تایید رمز عبور"
+              type="password"
+              fullWidth
+              margin="dense"
+              value={newUser.confirmPassword}
+              onChange={(e) =>
+                setNewUser({ ...newUser, confirmPassword: e.target.value })
+              }
+            />
             <FormControl fullWidth margin="dense">
               <InputLabel>نقش کاربر</InputLabel>
               <Select
-                value={newUser.role}
+                value={newUser.userType}
                 onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
+                  setNewUser({ ...newUser, userType: e.target.value })
                 }
               >
                 <MenuItem value="user">کاربر عادی</MenuItem>
@@ -302,11 +362,12 @@ const ManageUsers = () => {
             <FormControl fullWidth margin="dense">
               <InputLabel>نقش کاربر</InputLabel>
               <Select
-                value={editUser.role}
+                value={editUser.userType}
                 onChange={(e) =>
-                  setEditUser({ ...editUser, role: e.target.value })
+                  setEditUser({ ...editUser, userType: e.target.value })
                 }
               >
+                <MenuItem value="admin">ادمین</MenuItem>
                 <MenuItem value="user">کاربر عادی</MenuItem>
                 <MenuItem value="writer">نویسنده</MenuItem>
               </Select>

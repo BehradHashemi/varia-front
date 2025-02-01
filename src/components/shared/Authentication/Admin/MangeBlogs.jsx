@@ -12,44 +12,78 @@ import {
 } from "@mui/material";
 import { CheckCircle, Delete, Cancel } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 import e2p from "../../../../utils/persianNumber";
+
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
 
 const ManageBlogs = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [articles, setArticles] = useState([]);
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser?.userType === "admin") {
       setUser(storedUser);
+      fetchArticles();
     } else {
       navigate("/dashboard");
     }
   }, [navigate]);
-  const [articles, setArticles] = useState([]);
 
-  useEffect(() => {
-    const savedBlogs = JSON.parse(localStorage.getItem("blogs")) || [];
-    setArticles(savedBlogs);
-  }, []);
-
-  const handleApprove = (index) => {
-    const updatedArticles = [...articles];
-    updatedArticles[index].status = "approved";
-    setArticles(updatedArticles);
-    localStorage.setItem("blogs", JSON.stringify(updatedArticles));
+  const fetchArticles = async () => {
+    try {
+      const { data, error } = await supabase.from("Fronck-Blogs").select("*");
+      if (error) throw error;
+      setArticles(data);
+    } catch (error) {
+      console.error("خطا در دریافت مقالات:", error);
+    }
   };
 
-  const handleReject = (index) => {
-    const updatedArticles = [...articles];
-    updatedArticles[index].status = "rejected";
-    setArticles(updatedArticles);
-    localStorage.setItem("blogs", JSON.stringify(updatedArticles));
+  const handleApprove = async (id) => {
+    try {
+      const { error } = await supabase
+        .from("Fronck-Blogs")
+        .update({ status: "approved" })
+        .eq("id", id);
+
+      if (error) throw error;
+      fetchArticles();
+    } catch (error) {
+      console.error("خطا در تایید مقاله:", error);
+    }
   };
 
-  const handleDelete = (index) => {
-    const updatedArticles = articles.filter((_, i) => i !== index);
-    setArticles(updatedArticles);
-    localStorage.setItem("blogs", JSON.stringify(updatedArticles));
+  const handleReject = async (id) => {
+    try {
+      const { error } = await supabase
+        .from("Fronck-Blogs")
+        .update({ status: "rejected" })
+        .eq("id", id);
+
+      if (error) throw error;
+      fetchArticles();
+    } catch (error) {
+      console.error("خطا در رد مقاله:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const { error } = await supabase
+        .from("Fronck-Blogs")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      fetchArticles();
+    } catch (error) {
+      console.error("خطا در حذف مقاله:", error);
+    }
   };
 
   return (
@@ -89,10 +123,9 @@ const ManageBlogs = () => {
           </Typography>
         ) : (
           <List sx={{ width: "100%" }}>
-            {articles.map((article, index) => (
-              <>
+            {articles.map((article) => (
+              <React.Fragment key={article.id}>
                 <ListItem
-                  key={index}
                   sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -182,7 +215,7 @@ const ManageBlogs = () => {
                           startIcon={
                             <CheckCircle style={{ marginLeft: "5px" }} />
                           }
-                          onClick={() => handleApprove(index)}
+                          onClick={() => handleApprove(article.id)}
                           sx={{ px: 3, fontSize: "14px", fontWeight: "bold" }}
                         >
                           تایید مقاله
@@ -191,7 +224,7 @@ const ManageBlogs = () => {
                           variant="contained"
                           color="warning"
                           startIcon={<Cancel style={{ marginLeft: "5px" }} />}
-                          onClick={() => handleReject(index)}
+                          onClick={() => handleReject(article.id)}
                           sx={{ px: 3, fontSize: "14px", fontWeight: "bold" }}
                         >
                           رد مقاله
@@ -202,15 +235,15 @@ const ManageBlogs = () => {
                       variant="contained"
                       color="error"
                       startIcon={<Delete style={{ marginLeft: "5px" }} />}
-                      onClick={() => handleDelete(index)}
+                      onClick={() => handleDelete(article.id)}
                       sx={{ px: 3, fontSize: "14px", fontWeight: "bold" }}
                     >
                       حذف مقاله
                     </Button>
                   </Box>
                 </ListItem>
-                {index !== articles.length - 1 && <Divider sx={{ my: 2 }} />}
-              </>
+                <Divider sx={{ my: 2 }} />
+              </React.Fragment>
             ))}
           </List>
         )}

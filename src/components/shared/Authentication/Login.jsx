@@ -5,6 +5,12 @@ import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -17,22 +23,6 @@ const rtlCache = createCache({
 
 const Login = () => {
   const navigate = useNavigate();
-  const [siteSettings, setSiteSettings] = useState(null);
-
-  useEffect(() => {
-    fetch("https://fronck.storage.c2.liara.space/adminConfig.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to load admin config");
-        }
-        return response.json();
-      })
-      .then((data) => setSiteSettings(data))
-      .catch((error) => {
-        console.error("Error loading admin config:", error);
-        toast.error("خطا در دریافت تنظیمات ورود ادمین!");
-      });
-  }, []);
 
   useEffect(() => {
     if (localStorage.getItem("user")) {
@@ -53,38 +43,41 @@ const Login = () => {
         .min(6, "رمز عبور باید حداقل 6 کاراکتر باشد")
         .required("وارد کردن رمز عبور الزامی است"),
     }),
-    onSubmit: (values) => {
-      if (!siteSettings) {
-        toast.error("تنظیمات ورود بارگذاری نشده است!");
-        return;
-      }
+    onSubmit: async (values) => {
+      try {
+        const { data, error } = await supabase
+          .from("Fronck-Users")
+          .select("*")
+          .eq("email", values.email)
+          .eq("password", values.password)
+          .single();
 
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (storedUser && storedUser.email === values.email) {
-        toast.success(`${storedUser.name} عزیز خوش آمدید!`, {
-          position: "top-center",
-          autoClose: 2000,
-        });
-        setTimeout(() => navigate("/dashboard"), 2000);
-      } else if (
-        values.email === siteSettings.adminEmail &&
-        values.password === siteSettings.adminPassword
-      ) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            name: "مدیر",
-            email: values.email,
-            userType: "admin",
-          })
-        );
-        toast.success("ورود ادمین موفقیت‌آمیز بود!", {
-          position: "top-center",
-          autoClose: 2000,
-        });
-        setTimeout(() => navigate("/admin-panel"), 2000);
-      } else {
-        toast.error("ایمیل یا رمز عبور اشتباه است!", {
+        if (error) throw error;
+
+        if (data) {
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              name: data.name,
+              email: data.email,
+              userType: data.userType,
+            })
+          );
+
+          toast.success(`${data.name} عزیز خوش آمدید!`, {
+            position: "top-center",
+            autoClose: 2000,
+          });
+
+          setTimeout(() => navigate("/dashboard"), 2000);
+        } else {
+          toast.error("ایمیل یا رمز عبور اشتباه است!", {
+            position: "top-center",
+            autoClose: 2500,
+          });
+        }
+      } catch (error) {
+        toast.error("خطا در ورود به سیستم!", {
           position: "top-center",
           autoClose: 2500,
         });

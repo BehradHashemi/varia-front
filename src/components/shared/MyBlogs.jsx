@@ -11,21 +11,56 @@ import {
   Divider,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 import e2p from "../../utils/persianNumber";
 
-const MuBLogs = () => {
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
+
+const MyBlogs = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    const savedBlogs = JSON.parse(localStorage.getItem("blogs")) || [];
-    setArticles(savedBlogs);
-  }, []);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    console.log("Stored User:", storedUser); // Debugging
+    if (storedUser?.userType === "writer" || storedUser?.userType === "admin") {
+      setUser(storedUser);
+      if (storedUser.id) {
+        console.log("User ID:", storedUser.id); // Debugging
+        fetchArticles(storedUser.id);
+      } else {
+        console.error("User ID is missing in the stored user object.");
+      }
+    } else {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
-  const handleDelete = (index) => {
-    const updatedArticles = articles.filter((_, i) => i !== index);
-    setArticles(updatedArticles);
-    localStorage.setItem("blogs", JSON.stringify(updatedArticles));
+  const fetchArticles = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from("Fronck-Blogs") // Ensure the table name is correct
+        .select("*")
+        .eq("author_id", userId); // Ensure the column name is correct
+      if (error) throw error;
+      setArticles(data);
+    } catch (error) {
+      console.error("خطا در دریافت مقالات:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const { error } = await supabase.from("Fronck-Blogs").delete().eq("id", id);
+      if (error) throw error;
+      fetchArticles(user.id); // Refresh the list after deletion
+    } catch (error) {
+      console.error("خطا در حذف مقاله:", error);
+    }
   };
 
   return (
@@ -58,9 +93,9 @@ const MuBLogs = () => {
           </Typography>
         ) : (
           <List>
-            {articles.map((article, index) => (
+            {articles.map((article) => (
               <ListItem
-                key={index}
+                key={article.id}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
@@ -137,7 +172,7 @@ const MuBLogs = () => {
                     variant="contained"
                     color="error"
                     sx={{ alignSelf: "flex-end" }}
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(article.id)}
                   >
                     حذف مقاله
                   </Button>
@@ -146,7 +181,7 @@ const MuBLogs = () => {
                       variant="contained"
                       color="warning"
                       sx={{ alignSelf: "flex-end" }}
-                      onClick={() => navigate("/write-blog")}
+                      onClick={() => navigate(`/write-blog/${article.id}`)}
                     >
                       ویرایش و ارسال مجدد
                     </Button>
@@ -169,4 +204,4 @@ const MuBLogs = () => {
   );
 };
 
-export default MuBLogs;
+export default MyBlogs;

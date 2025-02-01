@@ -87,7 +87,7 @@ const Dashboard = () => {
                 fullWidth
                 variant="contained"
                 color="success"
-                startIcon={<MdCreate style={{ marginLeft: "4px" }}/>}
+                startIcon={<MdCreate style={{ marginLeft: "4px" }} />}
                 onClick={() => navigate("/write-blog")}
               >
                 نوشتن مقاله جدید
@@ -99,7 +99,7 @@ const Dashboard = () => {
               fullWidth
               variant="contained"
               color="primary"
-              startIcon={<MdOutlineArticle style={{ marginLeft: "4px" }}/>}
+              startIcon={<MdOutlineArticle style={{ marginLeft: "4px" }} />}
               onClick={() => navigate("/my-blogs")}
             >
               مقالات من
@@ -110,7 +110,7 @@ const Dashboard = () => {
               fullWidth
               variant="contained"
               color="secondary"
-              startIcon={<MdShoppingCart style={{ marginLeft: "4px" }}/>}
+              startIcon={<MdShoppingCart style={{ marginLeft: "4px" }} />}
               onClick={() => navigate("/cart")}
             >
               خریدهای من
@@ -121,7 +121,7 @@ const Dashboard = () => {
           fullWidth
           variant="outlined"
           color="error"
-          startIcon={<HiOutlineLogout style={{ marginLeft: "4px" }}/>}
+          startIcon={<HiOutlineLogout style={{ marginLeft: "4px" }} />}
           onClick={handleLogout}
           sx={{ mt: 3 }}
         >

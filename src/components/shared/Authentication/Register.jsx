@@ -1,5 +1,3 @@
-import { CacheProvider } from "@emotion/react";
-import createCache from "@emotion/cache";
 import React, { useEffect } from "react";
 import {
   TextField,
@@ -19,7 +17,15 @@ import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
+
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
 const rtlCache = createCache({
@@ -52,12 +58,7 @@ const Register = () => {
         .required("وارد کردن ایمیل الزامی است"),
       password: Yup.string()
         .min(6, "رمز عبور باید حداقل 6 کاراکتر باشد")
-        .required("وارد کردن رمز عبور الزامی است")
-        .test(
-          "not-admin-email",
-          "ایمیل ادمین معتبر نیست",
-          (value) => value !== "admin@example.com"
-        ),
+        .required("وارد کردن رمز عبور الزامی است"),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref("password"), null], "رمز عبور و تکرار آن مطابقت ندارند")
         .required("تایید رمز عبور الزامی است"),
@@ -67,13 +68,25 @@ const Register = () => {
         "پذیرش قوانین و مقررات الزامی است"
       ),
     }),
-    onSubmit: ({ name, email, userType }) => {
-      localStorage.setItem("user", JSON.stringify({ name, email, userType }));
-      toast.success(`${name} خوش آمدید!`, {
-        position: "top-center",
-        autoClose: 2000,
-      });
-      setTimeout(() => navigate("/dashboard"), 2000);
+    onSubmit: async ({ name, email, password, confirmPassword, userType }) => {
+      try {
+        const { data, error } = await supabase
+          .from("Fronck-Users")
+          .insert([{ name, email, password, confirmPassword, userType }]);
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ name, email, password, userType })
+        );
+        if (error) throw error;
+        toast.success("ثبت‌نام موفقیت‌آمیز بود!", {
+          position: "top-center",
+          autoClose: 2000,
+        });
+        setTimeout(() => navigate("/dashboard"), 2000);
+      } catch (error) {
+        toast.error(error.message);
+      }
     },
   });
 
@@ -86,6 +99,7 @@ const Register = () => {
         justifyContent: "center",
         direction: "rtl",
         padding: 1,
+        mb: 2,
       }}
     >
       <ToastContainer rtl />
@@ -203,10 +217,6 @@ const Register = () => {
                 backgroundColor: "#ff8b00",
                 borderRadius: "12px",
                 boxShadow: "0 6px 15px rgba(255, 139, 0, 0.5)",
-                "&:hover": {
-                  backgroundColor: "#e07b00",
-                  boxShadow: "0 8px 20px rgba(224, 123, 0, 0.6)",
-                },
               }}
             >
               ثبت نام
