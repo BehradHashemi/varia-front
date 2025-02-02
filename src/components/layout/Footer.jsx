@@ -19,10 +19,10 @@ function Footer() {
               <Link to="/">صفحه اصلی</Link>
             </li>
             <li>
-              <Link to="/login">حساب کاربری</Link>
+              <Link to="/dashboard">حساب کاربری</Link>
             </li>
             <li>
-              <Link to="/">تماس با ما</Link>
+              <Link to="/contact">تماس با ما</Link>
             </li>
           </ul>
         </div>

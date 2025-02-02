@@ -125,6 +125,19 @@ const WriteBlog = () => {
               value={blog.title}
               onChange={handleChange}
               fullWidth
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="نام نویسنده"
@@ -133,6 +146,19 @@ const WriteBlog = () => {
               value={blog.author}
               onChange={handleChange}
               fullWidth
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="برچسب‌ها (با کاما جدا کنید)"
@@ -141,6 +167,19 @@ const WriteBlog = () => {
               value={blog.tags}
               onChange={handleChange}
               fullWidth
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="متن مقاله"
@@ -151,6 +190,19 @@ const WriteBlog = () => {
               fullWidth
               multiline
               rows={5}
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <Typography variant="subtitle1" color="textSecondary">
               تاریخ انتشار: {e2p(blog.date)}

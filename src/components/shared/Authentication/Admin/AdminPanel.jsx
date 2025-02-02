@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Paper, Button, Grid, Avatar } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  Grid,
+  Avatar,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineLogout } from "react-icons/hi";
 import { MdOutlineArticle, MdPeople, MdSettings } from "react-icons/md";
@@ -7,6 +16,8 @@ import { MdOutlineArticle, MdPeople, MdSettings } from "react-icons/md";
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -28,8 +39,9 @@ const AdminPanel = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        margin: "15px auto",
+        justifyContent: "center",
         p: 1,
+        mb: 2,
       }}
     >
       <Paper
@@ -40,29 +52,39 @@ const AdminPanel = () => {
           width: "100%",
           maxWidth: "500px",
           textAlign: "center",
+          backgroundColor: theme.palette.background.paper,
         }}
       >
-        <Avatar sx={{ width: 80, height: 80, bgcolor: "#D32F2F", mx: "auto" }}>
+        <Avatar
+          sx={{
+            width: 80,
+            height: 80,
+            bgcolor: theme.palette.error.main,
+            mx: "auto",
+            mb: 2,
+          }}
+        >
           {user?.name.charAt(0).toUpperCase()}
         </Avatar>
-        <Typography variant="h4" fontWeight="bold" mt={2}>
+        <Typography variant="h4" fontWeight="bold" mb={2}>
           پنل مدیریت
         </Typography>
-        <Typography variant="subtitle1" color="textSecondary" mt={1}>
+        <Typography variant="subtitle1" color="textSecondary" mb={2}>
           {user?.email}
         </Typography>
-        <Typography variant="body1" color="textSecondary" mt={1}>
+        <Typography variant="body1" color="textSecondary" mb={3}>
           ادمین سایت
         </Typography>
 
-        <Grid container spacing={2} mt={3}>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Button
               fullWidth
               variant="contained"
               color="primary"
-              startIcon={<MdOutlineArticle style={{ marginLeft: "4px" }}/>}
+              startIcon={<MdOutlineArticle style={{ marginLeft: "5px" }} />}
               onClick={() => navigate("/manage-blogs")}
+              sx={{ py: 1.5 }}
             >
               مدیریت مقالات
             </Button>
@@ -72,8 +94,9 @@ const AdminPanel = () => {
               fullWidth
               variant="contained"
               color="secondary"
-              startIcon={<MdPeople style={{ marginLeft: "4px" }}/>}
+              startIcon={<MdPeople style={{ marginLeft: "5px" }} />}
               onClick={() => navigate("/manage-users")}
+              sx={{ py: 1.5 }}
             >
               مدیریت کاربران
             </Button>
@@ -83,8 +106,9 @@ const AdminPanel = () => {
               fullWidth
               variant="contained"
               color="warning"
-              startIcon={<MdSettings style={{ marginLeft: "4px" }}/>}
+              startIcon={<MdSettings style={{ marginLeft: "5px" }} />}
               onClick={() => navigate("/site-settings")}
+              sx={{ py: 1.5 }}
             >
               تنظیمات سایت
             </Button>
@@ -94,9 +118,9 @@ const AdminPanel = () => {
           fullWidth
           variant="outlined"
           color="error"
-          startIcon={<HiOutlineLogout style={{ marginLeft: "4px" }}/>}
+          startIcon={<HiOutlineLogout style={{ marginLeft: "5px" }} />}
           onClick={handleLogout}
-          sx={{ mt: 3 }}
+          sx={{ mt: 3, py: 1.5 }}
         >
           خروج از حساب
         </Button>

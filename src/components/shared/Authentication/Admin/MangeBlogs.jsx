@@ -9,6 +9,8 @@ import {
   Avatar,
   Chip,
   Divider,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { CheckCircle, Delete, Cancel } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +26,8 @@ const ManageBlogs = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [articles, setArticles] = useState([]);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -92,8 +96,9 @@ const ManageBlogs = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        margin: "15px auto",
+        justifyContent: "center",
         p: 1,
+        mb: 2,
       }}
     >
       <Paper
@@ -104,16 +109,19 @@ const ManageBlogs = () => {
           width: "100%",
           maxWidth: "900px",
           textAlign: "center",
-          backgroundColor: "#fff",
-          boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: theme.shadows[5],
         }}
       >
         <Typography
           variant="h4"
           fontWeight="bold"
           mb={3}
-          color="#333"
-          sx={{ borderBottom: "3px solid #1976d2", pb: 1 }}
+          color="textPrimary"
+          sx={{
+            borderBottom: `3px solid ${theme.palette.primary.main}`,
+            pb: 1,
+          }}
         >
           مدیریت مقالات
         </Typography>
@@ -130,42 +138,68 @@ const ManageBlogs = () => {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
-                    textAlign: "left",
+                    textAlign: "justify",
                     p: 3,
                     borderRadius: 3,
-                    backgroundColor: "#f9f9f9",
+                    backgroundColor: theme.palette.action.hover,
                     mb: 2,
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                    boxShadow: theme.shadows[2],
                     transition: "all 0.3s",
                     "&:hover": { transform: "scale(1.02)" },
                   }}
                 >
                   {article.image && (
                     <Avatar
-                      variant="rounded"
+                      variant="circular"
                       src={article.image}
                       alt="article-img"
                       sx={{
-                        width: "100%",
-                        height: 250,
+                        width: "60%",
+                        height: isMobile ? 150 : 250,
                         mb: 2,
                         borderRadius: 2,
+                        m: "auto",
                       }}
                     />
                   )}
                   <Typography variant="h6" fontWeight="bold" color="#333">
                     {article.title}
                   </Typography>
-                  <Typography variant="body2" color="textSecondary" mt={1}>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    mt={1}
+                    lineHeight="25px"
+                  >
                     {article.content}
                   </Typography>
+                  {article.tags && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1,
+                        mt: 2,
+                      }}
+                    >
+                      {article.tags.split("،").map((tag, index) => (
+                        <Chip
+                          key={index}
+                          label={`# ${tag.trim()}`}
+                          color="#00000080"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  )}
                   <Box
                     sx={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      width: "100%",
-                      maxWidth: "900px",
+                      flexDirection: { xs: "column", sm: "row" },
+                      gap: { xs: 2, sm: 0 },
                       mt: 2,
+                      width: "100%",
+                      justifyContent: "space-between",
                     }}
                   >
                     <Chip
@@ -201,10 +235,11 @@ const ManageBlogs = () => {
                   <Box
                     sx={{
                       display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
                       gap: 2,
                       mt: 2,
                       width: "100%",
-                      justifyContent: "center",
+                      justifyContent: "space-between",
                     }}
                   >
                     {article.status === "pending" && (

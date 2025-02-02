@@ -14,6 +14,15 @@ import {
   Paper,
 } from "@mui/material";
 
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import { prefixer } from "stylis";
+import rtlPlugin from "stylis-plugin-rtl";
+const rtlCache = createCache({
+  key: "muirtl",
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
 const validationSchema = Yup.object({
   name: Yup.string().required("نام الزامی است"),
   email: Yup.string().email("ایمیل معتبر نیست").required("ایمیل الزامی است"),
@@ -82,90 +91,98 @@ const ContactUs = () => {
         </Typography>
         <Box component="form" onSubmit={formik.handleSubmit}>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="نام شما"
-                name="name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.name && Boolean(formik.errors.name)}
-                helperText={formik.touched.name && formik.errors.name}
-                variant="outlined"
-                sx={{
-                  textAlign: "right",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#FF8B00",
+            <CacheProvider value={rtlCache}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="نام شما"
+                  name="name"
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.name && Boolean(formik.errors.name)}
+                  helperText={formik.touched.name && formik.errors.name}
+                  variant="outlined"
+                  sx={{
+                    textAlign: "right",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "12px",
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#FF8B00",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#374BFF",
+                        borderWidth: "2px",
+                      },
                     },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#374BFF",
-                      borderWidth: "2px",
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="ایمیل شما"
+                  name="email"
+                  type="email"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.email && Boolean(formik.errors.email)}
+                  helperText={formik.touched.email && formik.errors.email}
+                  variant="outlined"
+                  sx={{
+                    textAlign: "right",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "12px",
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#FF8B00",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#374BFF",
+                        borderWidth: "2px",
+                      },
                     },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="ایمیل شما"
-                name="email"
-                type="email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
-                variant="outlined"
-                sx={{
-                  textAlign: "right",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#FF8B00",
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="پیام شما"
+                  name="message"
+                  value={formik.values.message}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.message && Boolean(formik.errors.message)
+                  }
+                  helperText={formik.touched.message && formik.errors.message}
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  sx={{
+                    textAlign: "right",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "12px",
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#FF8B00",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#374BFF",
+                        borderWidth: "2px",
+                      },
                     },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#374BFF",
-                      borderWidth: "2px",
-                    },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="پیام شما"
-                name="message"
-                value={formik.values.message}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.message && Boolean(formik.errors.message)}
-                helperText={formik.touched.message && formik.errors.message}
-                multiline
-                rows={4}
-                variant="outlined"
-                sx={{
-                  textAlign: "right",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#FF8B00",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#374BFF",
-                      borderWidth: "2px",
-                    },
-                  },
-                }}
-              />
-            </Grid>
+                  }}
+                />
+              </Grid>
+            </CacheProvider>
 
             {/* کپچا */}
-            <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+            <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "center" }}
+            >
               <ReCAPTCHA
                 sitekey="SITE_KEY_YOU_RECEIVED_FROM_GOOGLE"
                 onChange={(value) => formik.setFieldValue("recaptcha", value)}

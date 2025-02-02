@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Container,
   Typography,
@@ -18,9 +18,14 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import blogs from "../../Data/Blog.json";
+import e2p from "../../utils/persianNumber";
+import { createClient } from "@supabase/supabase-js";
 
-// استایل‌های مشترک
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
+
 const styles = {
   searchInput: {
     flexGrow: 1,
@@ -60,34 +65,56 @@ const styles = {
   },
 };
 
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import { prefixer } from "stylis";
+import rtlPlugin from "stylis-plugin-rtl";
+const rtlCache = createCache({
+  key: "muirtl",
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
 const BlogList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
+  const [blogs, setBlogs] = useState([]);
 
-  // استخراج تمام برچسب‌های منحصر به فرد
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      const { data, error } = await supabase
+        .from("Fronck-Blogs")
+        .select("*")
+        .eq("status", "approved"); // فقط مقالاتی که approved هستند را دریافت کنید
+      if (error) {
+        console.error("Error fetching blogs:", error);
+      } else {
+        setBlogs(data);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
   const allTags = useMemo(
-    () => [...new Set(blogs.Blogs.flatMap((blog) => blog.tags))],
-    []
+    () => [...new Set(blogs.flatMap((blog) => blog.tags.split("،")))],
+    [blogs]
   );
 
-  // فیلتر و مرتب‌سازی مقالات بر اساس جستجو و برچسب
   const filteredBlogs = useMemo(() => {
-    return blogs.Blogs.filter((blog) => {
+    return blogs.filter((blog) => {
       const matchesSearch = blog.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       const matchesTag = selectedTag ? blog.tags.includes(selectedTag) : true;
       return matchesSearch && matchesTag;
     });
-  }, [searchTerm, selectedTag]);
+  }, [searchTerm, selectedTag, blogs]);
 
-  // تغییر جستجو
   const handleSearchChange = useCallback(
     (e) => setSearchTerm(e.target.value),
     []
   );
 
-  // تغییر برچسب
   const handleTagChange = useCallback(
     (e) => setSelectedTag(e.target.value),
     []
@@ -95,7 +122,6 @@ const BlogList = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 6, mb: 6 }}>
-      {/* عنوان صفحه */}
       <Typography
         variant="h3"
         component="h1"
@@ -110,7 +136,6 @@ const BlogList = () => {
         مقالات
       </Typography>
 
-      {/* باکس جستجو و مرتب‌سازی */}
       <Box
         sx={{
           display: "flex",
@@ -119,45 +144,44 @@ const BlogList = () => {
           flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        {/* باکس جستجو */}
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="جستجو در مقالات..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          sx={styles.searchInput}
-        />
+        <CacheProvider value={rtlCache}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="جستجو در مقالات..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            sx={styles.searchInput}
+          />
 
-        {/* مرتب‌سازی بر اساس برچسب */}
-        <FormControl fullWidth sx={{ minWidth: 200 }}>
-          <InputLabel
-            sx={{
-              color: "#374BFF",
-              "&.Mui-focused": {
+          <FormControl fullWidth sx={{ minWidth: 200 }}>
+            <InputLabel
+              sx={{
                 color: "#374BFF",
-              },
-            }}
-          >
-            مرتب‌سازی بر اساس برچسب
-          </InputLabel>
-          <Select
-            value={selectedTag}
-            onChange={handleTagChange}
-            label="مرتب‌سازی بر اساس برچسب"
-            sx={styles.selectInput}
-          >
-            <MenuItem value="">همه مقالات</MenuItem>
-            {allTags.map((tag) => (
-              <MenuItem key={tag} value={tag}>
-                {tag}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+                "&.Mui-focused": {
+                  color: "#374BFF",
+                },
+              }}
+            >
+              مرتب‌سازی بر اساس برچسب
+            </InputLabel>
+            <Select
+              value={selectedTag}
+              onChange={handleTagChange}
+              label="مرتب‌سازی بر اساس برچسب"
+              sx={styles.selectInput}
+            >
+              <MenuItem value="">همه مقالات</MenuItem>
+              {allTags.map((tag) => (
+                <MenuItem key={tag} value={tag}>
+                  {tag}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </CacheProvider>
       </Box>
 
-      {/* لیست مقالات */}
       <Grid container spacing={4}>
         {filteredBlogs.map((blog) => (
           <BlogCard key={blog.id} blog={blog} />
@@ -167,7 +191,6 @@ const BlogList = () => {
   );
 };
 
-// کامپوننت BlogCard برای جلوگیری از رندرهای غیرضروری
 const BlogCard = React.memo(({ blog }) => {
   return (
     <Grid item xs={12} sm={6} md={4}>
@@ -189,11 +212,11 @@ const BlogCard = React.memo(({ blog }) => {
           border: "1px solid rgba(255, 255, 255, 0.3)",
         }}
       >
-        <CardActionArea component={Link} to={`/article/${blog.id}`}>
+        <CardActionArea component={Link} to={`/blogs/${blog.id}`}>
           <CardMedia
             component="img"
             height="200"
-            image={blog.cover}
+            image={blog.image}
             alt={blog.title}
             sx={{ objectFit: "cover" }}
           />
@@ -215,17 +238,17 @@ const BlogCard = React.memo(({ blog }) => {
               </Typography>
             </Box>
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              تاریخ انتشار: {blog.date}
+              تاریخ انتشار: {e2p(blog.date)}
             </Typography>
             <Typography
               variant="body1"
               paragraph
               sx={{ color: "text.secondary", fontSize: "0.9rem" }}
             >
-              {blog.description.slice(0, 100)}... {/* نمایش خلاصه مقاله */}
+              {blog.content.slice(0, 50)}...
             </Typography>
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              {blog.tags.map((tag) => (
+              {blog.tags.split("،").map((tag) => (
                 <Chip
                   key={tag}
                   label={tag}
@@ -244,7 +267,7 @@ const BlogCard = React.memo(({ blog }) => {
         <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
           <Button
             component={Link}
-            to={`/article/${blog.id}`}
+            to={`/blogs/${blog.id}`}
             variant="contained"
             size="small"
             sx={{
@@ -254,6 +277,7 @@ const BlogCard = React.memo(({ blog }) => {
               bgcolor: "#374BFF",
               "&:hover": {
                 bgcolor: "#2A3AC7",
+                color: "#fff",
               },
             }}
           >

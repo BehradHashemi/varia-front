@@ -3,8 +3,10 @@ import {
   Box,
   Typography,
   Paper,
-  List,
-  ListItem,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
   Button,
   Avatar,
   Chip,
@@ -18,6 +20,9 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Delete, Add, Edit } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
@@ -41,6 +46,8 @@ const rtlCache = createCache({
 
 const ManageUsers = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
@@ -60,6 +67,7 @@ const ManageUsers = () => {
     confirmPassword: "",
     userType: "user",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -72,18 +80,24 @@ const ManageUsers = () => {
   }, [navigate]);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase.from("Fronck-Users").select("*");
       if (error) throw error;
       setUsers(data);
     } catch (error) {
       toast.error("خطا در دریافت کاربران!");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      const { error } = await supabase.from("Fronck-Users").delete().eq("id", id);
+      const { error } = await supabase
+        .from("Fronck-Users")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
       fetchUsers();
       toast.error("کاربر حذف شد.");
@@ -103,6 +117,7 @@ const ManageUsers = () => {
       toast.warning("لطفاً تمامی فیلدها را پر کنید.");
       return;
     }
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from("Fronck-Users")
@@ -121,14 +136,22 @@ const ManageUsers = () => {
       toast.success("کاربر جدید اضافه شد.");
     } catch (error) {
       toast.error("خطا در افزودن کاربر!");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEditUser = async () => {
-    if (!editUser.name || !editUser.email) {
+    if (
+      !editUser.name ||
+      !editUser.email ||
+      !editUser.password ||
+      !editUser.confirmPassword
+    ) {
       toast.warning("لطفاً تمامی فیلدها را پر کنید.");
       return;
     }
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("Fronck-Users")
@@ -140,6 +163,8 @@ const ManageUsers = () => {
       toast.info("اطلاعات کاربر به‌روز شد.");
     } catch (error) {
       toast.error("خطا در به‌روزرسانی کاربر!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -190,47 +215,40 @@ const ManageUsers = () => {
         >
           افزودن کاربر جدید
         </Button>
-        {users.length === 0 ? (
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : users.length === 0 ? (
           <Typography color="textSecondary">
             هیچ کاربری ثبت نشده است.
           </Typography>
         ) : (
-          <List sx={{ width: "100%" }}>
+          <Grid container spacing={3}>
             {users.map((user, index) => (
-              <>
-                <ListItem
-                  key={user.id}
+              <Grid item xs={12} sm={6} md={4} key={user.id}>
+                <Card
                   sx={{
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    p: 3,
+                    p: 2,
                     borderRadius: 3,
                     backgroundColor: "#f9f9f9",
-                    mb: 2,
                     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
                     transition: "all 0.3s",
                     "&:hover": { transform: "scale(1.02)" },
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Avatar sx={{ width: 50, height: 50 }}>
-                      {user.name.charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Typography
-                        variant="h6"
-                        fontWeight="bold"
-                        color="#333"
-                        textAlign="right"
-                      >
-                        {user.name}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {user.email}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <Avatar sx={{ width: 60, height: 60, mb: 2 }}>
+                    {user.name.charAt(0)}
+                  </Avatar>
+                  <Typography variant="h6" fontWeight="bold" color="#333">
+                    {user.name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" mb={2}>
+                    {user.email}
+                  </Typography>
                   <Chip
                     label={
                       user.userType === "admin"
@@ -239,10 +257,17 @@ const ManageUsers = () => {
                         ? "نویسنده"
                         : "کاربر عادی"
                     }
-                    color={user.userType === "writer" ? "secondary" : "default"}
+                    color={
+                      user.userType === "admin"
+                        ? "success"
+                        : user.userType === "writer"
+                        ? "secondary"
+                        : "default"
+                    }
                     variant="outlined"
+                    sx={{ mb: 2 }}
                   />
-                  <Box sx={{ display: "flex", gap: 1 }}>
+                  <CardActions>
                     <Button
                       variant="contained"
                       color="warning"
@@ -252,6 +277,7 @@ const ManageUsers = () => {
                         setSelectedIndex(index);
                         setEditUser(user);
                       }}
+                      sx={{ ml: 1 }}
                     >
                       ویرایش
                     </Button>
@@ -263,12 +289,11 @@ const ManageUsers = () => {
                     >
                       حذف
                     </Button>
-                  </Box>
-                </ListItem>
-                {index !== users.length - 1 && <Divider sx={{ my: 2 }} />}
-              </>
+                  </CardActions>
+                </Card>
+              </Grid>
             ))}
-          </List>
+          </Grid>
         )}
       </Paper>
 
@@ -283,6 +308,19 @@ const ManageUsers = () => {
               margin="dense"
               value={newUser.name}
               onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="ایمیل"
@@ -292,6 +330,19 @@ const ManageUsers = () => {
               onChange={(e) =>
                 setNewUser({ ...newUser, email: e.target.value })
               }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="رمز عبور"
@@ -302,6 +353,19 @@ const ManageUsers = () => {
               onChange={(e) =>
                 setNewUser({ ...newUser, password: e.target.value })
               }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="تایید رمز عبور"
@@ -312,6 +376,19 @@ const ManageUsers = () => {
               onChange={(e) =>
                 setNewUser({ ...newUser, confirmPassword: e.target.value })
               }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <FormControl fullWidth margin="dense">
               <InputLabel>نقش کاربر</InputLabel>
@@ -320,6 +397,21 @@ const ManageUsers = () => {
                 onChange={(e) =>
                   setNewUser({ ...newUser, userType: e.target.value })
                 }
+                sx={{
+                  borderRadius: "12px",
+                  backgroundColor: "#FFF",
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#FF8B00",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#374BFF",
+                      borderWidth: "2px",
+                    },
+                  },
+                }}
               >
                 <MenuItem value="user">کاربر عادی</MenuItem>
                 <MenuItem value="writer">نویسنده</MenuItem>
@@ -349,6 +441,19 @@ const ManageUsers = () => {
               onChange={(e) =>
                 setEditUser({ ...editUser, name: e.target.value })
               }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <TextField
               label="ایمیل"
@@ -358,6 +463,63 @@ const ManageUsers = () => {
               onChange={(e) =>
                 setEditUser({ ...editUser, email: e.target.value })
               }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
+            />
+            <TextField
+              label="رمز عبور"
+              fullWidth
+              margin="dense"
+              value={editUser.password}
+              onChange={(e) =>
+                setEditUser({ ...editUser, password: e.target.value })
+              }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
+            />
+            <TextField
+              label="تایید رمز عبور"
+              fullWidth
+              margin="dense"
+              value={editUser.confirmPassword}
+              onChange={(e) =>
+                setEditUser({ ...editUser, confirmPassword: e.target.value })
+              }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#FF8B00",
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#374BFF",
+                    borderWidth: "2px",
+                  },
+                },
+              }}
             />
             <FormControl fullWidth margin="dense">
               <InputLabel>نقش کاربر</InputLabel>
@@ -366,6 +528,21 @@ const ManageUsers = () => {
                 onChange={(e) =>
                   setEditUser({ ...editUser, userType: e.target.value })
                 }
+                sx={{
+                  borderRadius: "12px",
+                  backgroundColor: "#FFF",
+                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#FF8B00",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#374BFF",
+                      borderWidth: "2px",
+                    },
+                  },
+                }}
               >
                 <MenuItem value="admin">ادمین</MenuItem>
                 <MenuItem value="user">کاربر عادی</MenuItem>

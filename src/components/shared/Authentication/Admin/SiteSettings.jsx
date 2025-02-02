@@ -7,13 +7,19 @@ import {
   TextField,
   Switch,
   FormControlLabel,
-  MenuItem,
-  Select,
   FormControl,
-  InputLabel,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineLogout } from "react-icons/hi";
+
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import { prefixer } from "stylis";
+import rtlPlugin from "stylis-plugin-rtl";
+const rtlCache = createCache({
+  key: "muirtl",
+  stylisPlugins: [prefixer, rtlPlugin],
+});
 
 const SiteSettings = () => {
   const navigate = useNavigate();
@@ -21,7 +27,6 @@ const SiteSettings = () => {
     siteTitle: "سایت من",
     maintenanceMode: false,
     allowRegistration: true,
-    themeColor: "#374BFF",
     adminEmail: "",
     adminPassword: "",
   });
@@ -44,16 +49,6 @@ const SiteSettings = () => {
     });
     alert("تنظیمات ذخیره شد!");
   };
-  
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser?.userType === "admin") {
-      setUser(storedUser);
-    } else {
-      navigate("/dashboard");
-    }
-  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -66,82 +61,92 @@ const SiteSettings = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        margin: "15px auto",
+        justifyContent: "center",
         p: 1,
+        backgroundColor: "#f5f5f5",
       }}
     >
       <Paper
-        elevation={6}
+        elevation={8}
         sx={{
           p: 4,
-          borderRadius: 3,
+          mb: 2,
+          borderRadius: 4,
           width: "100%",
           maxWidth: "500px",
           textAlign: "center",
+          backgroundColor: "white",
         }}
       >
-        <Typography variant="h4" fontWeight="bold" mt={2}>
+        <Typography variant="h4" fontWeight="bold" mb={3}>
           تنظیمات سایت
         </Typography>
-        <TextField
-          fullWidth
-          label="عنوان سایت"
-          variant="outlined"
-          margin="normal"
-          value={settings.siteTitle}
-          onChange={(e) =>
-            setSettings({ ...settings, siteTitle: e.target.value })
-          }
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={settings.maintenanceMode}
-              onChange={(e) =>
-                setSettings({ ...settings, maintenanceMode: e.target.checked })
-              }
-            />
-          }
-          label="حالت تعمیر و نگهداری"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={settings.allowRegistration}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  allowRegistration: e.target.checked,
-                })
-              }
-            />
-          }
-          label="فعال کردن ثبت‌نام کاربران"
-        />
+        <CacheProvider value={rtlCache}>
+          <TextField
+            fullWidth
+            label="عنوان سایت"
+            variant="outlined"
+            margin="normal"
+            value={settings.siteTitle}
+            onChange={(e) =>
+              setSettings({ ...settings, siteTitle: e.target.value })
+            }
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.maintenanceMode}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    maintenanceMode: e.target.checked,
+                  })
+                }
+              />
+            }
+            label="حالت تعمیر و نگهداری"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.allowRegistration}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    allowRegistration: e.target.checked,
+                  })
+                }
+              />
+            }
+            label="فعال کردن ثبت‌نام کاربران"
+          />
+        </CacheProvider>
         <Typography variant="h6" fontWeight="bold" mt={3}>
           اطلاعات ورود ادمین
         </Typography>
-        <TextField
-          fullWidth
-          label="ایمیل ادمین"
-          variant="outlined"
-          margin="normal"
-          value={settings.adminEmail}
-          onChange={(e) =>
-            setSettings({ ...settings, adminEmail: e.target.value })
-          }
-        />
-        <TextField
-          fullWidth
-          label="رمز عبور ادمین"
-          type="password"
-          variant="outlined"
-          margin="normal"
-          value={settings.adminPassword}
-          onChange={(e) =>
-            setSettings({ ...settings, adminPassword: e.target.value })
-          }
-        />
+        <CacheProvider value={rtlCache}>
+          <TextField
+            fullWidth
+            label="ایمیل ادمین"
+            variant="outlined"
+            margin="normal"
+            value={settings.adminEmail}
+            onChange={(e) =>
+              setSettings({ ...settings, adminEmail: e.target.value })
+            }
+          />
+          <TextField
+            fullWidth
+            label="رمز عبور ادمین"
+            type="password"
+            variant="outlined"
+            margin="normal"
+            value={settings.adminPassword}
+            onChange={(e) =>
+              setSettings({ ...settings, adminPassword: e.target.value })
+            }
+          />
+        </CacheProvider>
         <Button
           fullWidth
           variant="contained"
@@ -157,7 +162,7 @@ const SiteSettings = () => {
           color="error"
           startIcon={<HiOutlineLogout />}
           onClick={handleLogout}
-          sx={{ mt: 3 }}
+          sx={{ mt: 2 }}
         >
           خروج از حساب
         </Button>

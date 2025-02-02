@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -13,15 +13,37 @@ import {
 } from "@mui/material";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { IoMdArrowRoundBack } from "react-icons/io";
-import blogs from "../../Data/Blog.json";
 import e2p from "../../utils/persianNumber";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://ojzkqlpghuyjazsitnic.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+);
 
 const DetailBlog = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const blog = blogs.Blogs.find((blog) => blog.id === parseInt(id));
+  const [blog, setBlog] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    const fetchBlog = async () => {
+      const { data, error } = await supabase
+        .from("Fronck-Blogs")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) {
+        console.error("Error fetching blog:", error);
+      } else {
+        setBlog(data);
+      }
+    };
+
+    fetchBlog();
+  }, [id]);
 
   if (!blog) {
     return (
@@ -78,7 +100,7 @@ const DetailBlog = () => {
             color: "text.secondary",
           }}
         >
-          {blog.description}
+          {blog.content}
         </Typography>
 
         <Box sx={{ mt: 3 }}>
@@ -89,7 +111,7 @@ const DetailBlog = () => {
             برچسب‌ها:
           </Typography>
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-            {blog.tags.map((tag, index) => (
+            {blog.tags.split("،").map((tag, index) => (
               <Chip
                 key={index}
                 label={tag}
