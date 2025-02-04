@@ -57,6 +57,8 @@ const BlogList = () => {
   const [selectedTag, setSelectedTag] = useState("");
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogsPerPage = 6;
 
   useEffect(() => {
     fetchBlogs();
@@ -105,14 +107,24 @@ const BlogList = () => {
     []
   );
 
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+
+  const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
   return (
-    <Container sx={{ my: 6 }}>
+    <Container>
       <Typography
         variant="h3"
         component="h1"
         sx={{
           fontWeight: "bold",
-          mb: 4,
+          mb: 2,
           textAlign: "center",
           color: "#374BFF",
           fontSize: { xs: "2rem", sm: "3rem" },
@@ -166,22 +178,70 @@ const BlogList = () => {
         </CacheProvider>
       </Box>
 
-      <Grid container spacing={1}>
+      <Grid container spacing={1} sx={{ mb: 4 }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", m: "auto" }}>
             <CircularProgress />
           </Box>
         ) : (
-          filteredBlogs.map((blog) => <BlogCard key={blog.id} blog={blog} />)
+          currentBlogs.map((blog) => <BlogCard key={blog.id} blog={blog} />)
         )}
       </Grid>
+      <Box sx={{ display: "flex", justifyContent: "center", my: 3, gap: 2 }}>
+        <Button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          variant="contained"
+          sx={{
+            borderRadius: "12px",
+            textTransform: "none",
+            fontWeight: "bold",
+            bgcolor: "#374BFF",
+            color: "#fff",
+            "&:hover": { bgcolor: "#2A3AC7" },
+            "&:disabled": { bgcolor: "#ccc", color: "#666" },
+          }}
+        >
+          قبلی
+        </Button>
+
+        <Typography
+          sx={{
+            mx: 2,
+            px: 2,
+            py: 1,
+            borderRadius: "8px",
+            bgcolor: "#f1f1f1",
+            fontWeight: "bold",
+          }}
+        >
+          {e2p(currentPage)} از {e2p(totalPages)}
+        </Typography>
+
+        <Button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          variant="contained"
+          sx={{
+            borderRadius: "12px",
+            textTransform: "none",
+            fontWeight: "bold",
+            bgcolor: "#374BFF",
+            color: "#fff",
+            "&:hover": { bgcolor: "#2A3AC7" },
+            "&:disabled": { bgcolor: "#ccc", color: "#666" },
+          }}
+        >
+          بعدی
+        </Button>
+      </Box>
     </Container>
   );
 };
 
 const BlogCard = React.memo(({ blog }) => {
   return (
-    <Grid item xs={12} sm={6} md={4}>
+    <Grid item xs={12} sm={4} md={4}>
       <Card
         sx={{
           height: "100%",

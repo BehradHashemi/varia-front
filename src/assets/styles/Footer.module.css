@@ -40,6 +40,7 @@
     flex-direction: column-reverse;
     align-items: center;
     justify-content: center;
+    text-align: center;
   }
 
   .sectionLinks {

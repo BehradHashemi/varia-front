@@ -208,104 +208,110 @@ const ManageBlogs = () => {
                           mb: 2,
                           cursor: "pointer",
                         }}
-                        onClick={() => navigate(`/manage-blogs/${article.id}`)}
                       >
-                        {article.image && (
-                          <Avatar
-                            variant="circular"
-                            src={article.image}
-                            alt="article-img"
+                        <Box
+                          sx={{ width: "100%" }}
+                          onClick={() =>
+                            navigate(`/manage-blogs/${article.id}`)
+                          }
+                        >
+                          {article.image && (
+                            <Avatar
+                              variant="circular"
+                              src={article.image}
+                              alt="article-img"
+                              sx={{
+                                width: "100%",
+                                maxWidth: isMobile ? "100%" : "60%",
+                                height: isMobile ? "150px" : "250px",
+                                borderRadius: 2,
+                                objectFit: "cover",
+                                m: "10px 0 20px",
+                              }}
+                            />
+                          )}
+                          <Typography
+                            variant="h6"
+                            fontWeight="bold"
+                            color="#333"
                             sx={{
-                              width: "100%",
-                              maxWidth: isMobile ? "100%" : "60%",
-                              height: isMobile ? "150px" : "250px",
-                              borderRadius: 2,
-                              objectFit: "cover",
-                              m: "10px 0 20px",
+                              minHeight: "50px",
+                              display: "-webkit-box",
+                              WebkitBoxOrient: "vertical",
+                              WebkitLineClamp: 2,
+                              overflow: "hidden",
                             }}
-                          />
-                        )}
-                        <Typography
-                          variant="h6"
-                          fontWeight="bold"
-                          color="#333"
-                          sx={{
-                            minHeight: "50px",
-                            display: "-webkit-box",
-                            WebkitBoxOrient: "vertical",
-                            WebkitLineClamp: 2,
-                            overflow: "hidden",
-                          }}
-                        >
-                          {article.title}
-                        </Typography>
-                        <Typography
-                          variant="body1"
-                          color="#333"
-                          mt={1}
-                          lineHeight="30px"
-                        >
-                          {article.content.slice(0, 50)} ...
-                        </Typography>
-                        {article.tags && (
+                          >
+                            {article.title}
+                          </Typography>
+                          <Typography
+                            variant="body1"
+                            color="#333"
+                            mt={1}
+                            lineHeight="30px"
+                          >
+                            {article.content.slice(0, 50)} ...
+                          </Typography>
+                          {article.tags && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 1,
+                                mt: 2,
+                              }}
+                            >
+                              {article.tags.split("،").map((tag, index) => (
+                                <Chip
+                                  key={index}
+                                  label={`# ${tag.trim()}`}
+                                  variant="filled"
+                                  sx={{ bgcolor: "#FF8B00", color: "#FFF" }}
+                                />
+                              ))}
+                            </Box>
+                          )}
                           <Box
                             sx={{
                               display: "flex",
-                              flexWrap: "wrap",
-                              gap: 1,
+                              flexDirection: { xs: "column", sm: "row" },
+                              gap: { xs: 2, sm: 0 },
                               mt: 2,
+                              width: "100%",
+                              justifyContent: "space-between",
                             }}
                           >
-                            {article.tags.split("،").map((tag, index) => (
-                              <Chip
-                                key={index}
-                                label={`# ${tag.trim()}`}
-                                variant="filled"
-                                sx={{ bgcolor: "#FF8B00", color: "#FFF" }}
-                              />
-                            ))}
+                            <Chip
+                              label={e2p(article.date)}
+                              color="primary"
+                              variant="outlined"
+                              sx={{ fontSize: "14px", fontWeight: "bold" }}
+                            />
+                            <Chip
+                              label={`نویسنده: ${article.author}`}
+                              color="secondary"
+                              variant="outlined"
+                              sx={{ fontSize: "14px", fontWeight: "bold" }}
+                            />
                           </Box>
-                        )}
-                        <Box
-                          sx={{
-                            display: "flex",
-                            flexDirection: { xs: "column", sm: "row" },
-                            gap: { xs: 2, sm: 0 },
-                            mt: 2,
-                            width: "100%",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <Chip
-                            label={e2p(article.date)}
-                            color="primary"
-                            variant="outlined"
-                            sx={{ fontSize: "14px", fontWeight: "bold" }}
-                          />
-                          <Chip
-                            label={`نویسنده: ${article.author}`}
-                            color="secondary"
-                            variant="outlined"
-                            sx={{ fontSize: "14px", fontWeight: "bold" }}
-                          />
-                        </Box>
-                        <Typography
-                          variant="subtitle2"
-                          color={
-                            article.status === "approved"
-                              ? "green"
+                          <Typography
+                            variant="subtitle2"
+                            color={
+                              article.status === "approved"
+                                ? "green"
+                                : article.status === "rejected"
+                                ? "red"
+                                : "orange"
+                            }
+                            sx={{ mt: 1, fontWeight: "bold" }}
+                          >
+                            {article.status === "approved"
+                              ? "تایید شده"
                               : article.status === "rejected"
-                              ? "red"
-                              : "orange"
-                          }
-                          sx={{ mt: 1, fontWeight: "bold" }}
-                        >
-                          {article.status === "approved"
-                            ? "تایید شده"
-                            : article.status === "rejected"
-                            ? "رد شده"
-                            : "در انتظار تایید"}
-                        </Typography>
+                              ? "رد شده"
+                              : "در انتظار تایید"}
+                          </Typography>
+                        </Box>
                         <Box
                           sx={{
                             display: "flex",
