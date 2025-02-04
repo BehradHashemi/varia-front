@@ -20,28 +20,14 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import e2p from "../../utils/persianNumber";
+import SearchIcon from "@mui/icons-material/Search";
+import TuneIcon from '@mui/icons-material/Tune';
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   "https://ojzkqlpghuyjazsitnic.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
 );
-
-const styles = {
-  searchInput: {
-    flexGrow: 1,
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "12px",
-      backgroundColor: "#FFF",
-      boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    },
-  },
-  selectInput: {
-    borderRadius: "12px",
-    backgroundColor: "#FFF",
-    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-  },
-};
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -59,6 +45,11 @@ const BlogList = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 6;
+  const [sortOrder, setSortOrder] = useState("newest");
+
+  const handleSortChange = (event) => {
+    setSortOrder(event.target.value);
+  };
 
   useEffect(() => {
     fetchBlogs();
@@ -102,21 +93,20 @@ const BlogList = () => {
     []
   );
 
-  const handleTagChange = useCallback(
-    (e) => setSelectedTag(e.target.value),
-    []
-  );
-
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
-  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
 
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
   };
-
+  const sortedBlogs = [...filteredBlogs].sort((a, b) => {
+    return sortOrder === "newest"
+      ? new Date(b.date) - new Date(a.date)
+      : new Date(a.date) - new Date(b.date);
+  });
+  const currentBlogs = sortedBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
   return (
     <Container>
       <Typography
@@ -137,35 +127,38 @@ const BlogList = () => {
           display: "flex",
           gap: 2,
           mb: 4,
-          flexDirection: { xs: "column", sm: "row" },
+          flexDirection: { xs: "column-reverse", sm: "row" },
         }}
       >
         <CacheProvider value={rtlCache}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="جستجو در مقالات..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            sx={styles.searchInput}
-          />
-
-          <FormControl fullWidth sx={{ minWidth: 200 }}>
-            <InputLabel
+          <FormControl sx={{ minWidth: 150 }}>
+            <Select
+              value={sortOrder}
+              onChange={handleSortChange}
               sx={{
-                color: "#374BFF",
-                "&.Mui-focused": {
-                  color: "#374BFF",
-                },
+                flexGrow: 1,
+                borderRadius: "12px",
+                backgroundColor: "#FFF",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
               }}
             >
-              مرتب‌سازی بر اساس برچسب
-            </InputLabel>
+              <MenuItem value="newest">جدیدترین</MenuItem>
+              <MenuItem value="oldest">قدیمی‌ترین</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
             <Select
               value={selectedTag}
-              onChange={handleTagChange}
-              label="مرتب‌سازی بر اساس برچسب"
-              sx={styles.selectInput}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              sx={{
+                flexGrow: 1,
+                borderRadius: "12px",
+                backgroundColor: "#FFF",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              }}
+              startAdornment={
+                <TuneIcon sx={{ color: "#999", mr: 1 }} />
+              }
             >
               <MenuItem value="">همه مقالات</MenuItem>
               {allTags.map((tag) => (
@@ -175,6 +168,24 @@ const BlogList = () => {
               ))}
             </Select>
           </FormControl>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="جستجو در مقالات..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            sx={{
+              flexGrow: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+                backgroundColor: "#FFF",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+              },
+            }}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ color: "#999", ml: 1 }} />,
+            }}
+          />
         </CacheProvider>
       </Box>
 
