@@ -1,26 +1,37 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
+  AppBar,
+  Toolbar,
   Typography,
-  Paper,
   Button,
-  Grid,
   Avatar,
+  Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   useTheme,
+  Paper,
   useMediaQuery,
+  Drawer,
+  IconButton,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import { HiOutlineLogout } from "react-icons/hi";
 import {
   MdOutlineArticle,
   MdShoppingCart,
   MdAdminPanelSettings,
   MdCreate,
+  MdDashboard,
+  MdMenu,
 } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -38,121 +49,106 @@ const Dashboard = () => {
     navigate("/login");
   };
 
+  const menuItems = [
+    { text: "مقالات من", icon: <MdOutlineArticle />, path: "/my-blogs" },
+    { text: "خریدهای من", icon: <MdShoppingCart />, path: "/cart" },
+  ];
+
+  if (user?.userType !== "user") {
+    menuItems.unshift({
+      text: "نوشتن مقاله",
+      icon: <MdCreate />,
+      path: "/write-blog",
+    });
+  }
+  if (user?.userType === "admin") {
+    menuItems.unshift({
+      text: "مدیریت سایت",
+      icon: <MdAdminPanelSettings />,
+      path: "/admin-panel",
+    });
+  }
+
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        p: 1,
-        mb: 2,
+        my: 5,
+        height: "100%",
       }}
     >
-      <Paper
-        elevation={6}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          width: "100%",
-          maxWidth: "500px",
-          textAlign: "center",
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <Avatar
-          sx={{
-            width: 80,
-            height: 80,
-            bgcolor: theme.palette.primary.main,
-            mx: "auto",
-            mb: 2,
-          }}
-        >
-          {user?.name.charAt(0).toUpperCase()}
-        </Avatar>
-        <Typography variant="h4" fontWeight="bold" mb={2}>
-          {user?.name}
-        </Typography>
-        <Typography variant="subtitle1" color="textSecondary" mb={2}>
-          {user?.email}
-        </Typography>
-        <Typography variant="body1" color="textSecondary" mb={3}>
-          نقش:{" "}
-          {user?.userType === "admin"
-            ? "ادمین"
-            : user?.userType === "writer"
-            ? "نویسنده"
-            : "کاربر عادی"}
-        </Typography>
-
-        <Grid container spacing={2}>
-          {user?.userType === "admin" && (
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="warning"
-                startIcon={
-                  <MdAdminPanelSettings style={{ marginLeft: "5px" }} />
-                }
-                onClick={() => navigate("/admin-panel")}
-                sx={{ py: 1.5 }}
-              >
-                مدیریت سایت
-              </Button>
-            </Grid>
-          )}
-          {user?.userType === "writer" && (
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="success"
-                startIcon={<MdCreate style={{ marginLeft: "5px" }} />}
-                onClick={() => navigate("/write-blog")}
-                sx={{ py: 1.5 }}
-              >
-                نوشتن مقاله جدید
-              </Button>
-            </Grid>
-          )}
-          <Grid item xs={6}>
+      <Grid container spacing={1} sx={{ width: "100%", height: "100%" }}>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 3, textAlign: "center", borderRadius: "10px" }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+              پنل کاربری
+            </Typography>
+            <List>
+              {menuItems.map((item, index) => (
+                <ListItem
+                  button
+                  key={index}
+                  onClick={() => navigate(item.path)}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItem>
+              ))}
+            </List>
             <Button
               fullWidth
-              variant="contained"
-              color="primary"
-              startIcon={<MdOutlineArticle style={{ marginLeft: "5px" }} />}
-              onClick={() => navigate("/my-blogs")}
-              sx={{ py: 1.5 }}
+              variant="outlined"
+              color="error"
+              startIcon={<HiOutlineLogout style={{ marginLeft: "5px" }} />}
+              onClick={handleLogout}
+              sx={{ mt: 2 }}
             >
-              مقالات من
+              خروج از حساب
             </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="secondary"
-              startIcon={<MdShoppingCart style={{ marginLeft: "5px" }} />}
-              onClick={() => navigate("/cart")}
-              sx={{ py: 1.5 }}
-            >
-              خریدهای من
-            </Button>
-          </Grid>
+          </Paper>
         </Grid>
-        <Button
-          fullWidth
-          variant="outlined"
-          color="error"
-          startIcon={<HiOutlineLogout style={{ marginLeft: "5px" }} />}
-          onClick={handleLogout}
-          sx={{ mt: 3, py: 1.5 }}
-        >
-          خروج از حساب
-        </Button>
-      </Paper>
+
+        <Grid item xs={12} md={8}>
+          <Paper
+            sx={{
+              p: 4,
+              textAlign: "right",
+              borderRadius: "10px",
+              height: "100%",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Avatar
+                sx={{
+                  width: 80,
+                  height: 80,
+                  bgcolor: theme.palette.primary.main,
+                }}
+              >
+                {user?.name?.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box>
+                <Typography variant="h5" fontWeight="bold">
+                  {user?.name}
+                </Typography>
+                <Typography variant="subtitle1" color="textSecondary">
+                  {user?.email}
+                </Typography>
+                <Typography variant="body1" color="textSecondary">
+                  نقش:{" "}
+                  {user?.userType === "admin"
+                    ? "ادمین"
+                    : user?.userType === "writer"
+                    ? "نویسنده"
+                    : "کاربر عادی"}
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

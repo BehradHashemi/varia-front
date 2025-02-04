@@ -3,14 +3,13 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
   Button,
-  Avatar,
-  Chip,
-  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,10 +18,12 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   CircularProgress,
-  useMediaQuery,
-  useTheme,
+  Grid,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  List,
 } from "@mui/material";
 import { Delete, Add, Edit } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
@@ -39,6 +40,12 @@ import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
+import {
+  MdAdminPanelSettings,
+  MdDashboard,
+  MdOutlineArticle,
+} from "react-icons/md";
+import e2p from "../../../../utils/persianNumber";
 const rtlCache = createCache({
   key: "muirtl",
   stylisPlugins: [prefixer, rtlPlugin],
@@ -46,13 +53,13 @@ const rtlCache = createCache({
 
 const ManageUsers = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [userTypeFilter, setUserTypeFilter] = useState("all");
+  const [searchEmail, setSearchEmail] = useState("");
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -167,6 +174,45 @@ const ManageUsers = () => {
       setLoading(false);
     }
   };
+  const fetchUsersByEmail = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("Fronck-Users")
+        .select("*")
+        .ilike("email", `%${searchEmail}%`);
+      if (error) throw error;
+      setUsers(data);
+    } catch (error) {
+      toast.error("خطا در دریافت کاربران!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = users.filter(
+    (user) =>
+      userTypeFilter === "all" ||
+      user.userType?.toLowerCase() === userTypeFilter.toLowerCase()
+  );
+
+  const menuItems = [
+    {
+      text: "داشبورد",
+      icon: <MdDashboard />,
+      path: "/dashboard",
+    },
+    {
+      text: "مدیریت سایت",
+      icon: <MdAdminPanelSettings />,
+      path: "/admin-panel",
+    },
+    {
+      text: "مدیریت مقالات",
+      icon: <MdOutlineArticle />,
+      path: "/manage-blogs",
+    },
+  ];
 
   return (
     <Box
@@ -174,129 +220,174 @@ const ManageUsers = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        margin: "15px auto",
-        p: 1,
+        my: 5,
+        height: "100%",
+        direction: "rtl",
       }}
     >
       <ToastContainer rtl />
-      <Paper
-        elevation={8}
-        sx={{
-          p: 4,
-          borderRadius: 4,
-          width: "100%",
-          maxWidth: "900px",
-          textAlign: "center",
-          backgroundColor: "#fff",
-          boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          mb={3}
-          color="#333"
-          sx={{ borderBottom: "3px solid #1976d2", pb: 1 }}
-        >
-          مدیریت کاربران
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Add style={{ marginLeft: "5px" }} />}
-          onClick={() => setOpen(true)}
-          sx={{
-            mb: 3,
-            px: 3,
-            fontSize: "14px",
-            fontWeight: "bold",
-            borderRadius: "8px",
-          }}
-        >
-          افزودن کاربر جدید
-        </Button>
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : users.length === 0 ? (
-          <Typography color="textSecondary">
-            هیچ کاربری ثبت نشده است.
-          </Typography>
-        ) : (
-          <Grid container spacing={3}>
-            {users.map((user, index) => (
-              <Grid item xs={12} sm={6} md={4} key={user.id}>
-                <Card
+      <Grid container spacing={2} sx={{ width: "100%", height: "100%" }}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 4, textAlign: "center", borderRadius: "10px" }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+              مدریت کاربران
+            </Typography>
+            <List>
+              {menuItems.map((item, index) => (
+                <ListItem
+                  button
+                  key={index}
+                  onClick={() => navigate(item.path)}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Box sx={{ p: 1, textAlign: "center", borderRadius: "10px" }}>
+            <CacheProvider value={rtlCache}>
+              <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+                <TextField
+                  label="جستجو بر اساس ایمیل"
+                  variant="outlined"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && fetchUsersByEmail()}
+                  fullWidth
                   sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    p: 2,
-                    borderRadius: 3,
-                    backgroundColor: "#f9f9f9",
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                    transition: "all 0.3s",
-                    "&:hover": { transform: "scale(1.02)" },
+                    textAlign: "rgiht",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "12px",
+                    },
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={fetchUsersByEmail}
+                  sx={{
+                    px: 3,
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    borderRadius: "8px",
                   }}
                 >
-                  <Avatar sx={{ width: 60, height: 60, mb: 2 }}>
-                    {user.name.charAt(0)}
-                  </Avatar>
-                  <Typography variant="h6" fontWeight="bold" color="#333">
-                    {user.name}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary" mb={2}>
-                    {user.email}
-                  </Typography>
-                  <Chip
-                    label={
-                      user.userType === "admin"
-                        ? "ادمین"
-                        : user?.userType === "writer"
-                        ? "نویسنده"
-                        : "کاربر عادی"
-                    }
-                    color={
-                      user.userType === "admin"
-                        ? "success"
-                        : user.userType === "writer"
-                        ? "secondary"
-                        : "default"
-                    }
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                  <CardActions>
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      startIcon={<Edit style={{ marginLeft: "5px" }} />}
-                      onClick={() => {
-                        setEditOpen(true);
-                        setSelectedIndex(index);
-                        setEditUser(user);
-                      }}
-                      sx={{ ml: 1 }}
-                    >
-                      ویرایش
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<Delete style={{ marginLeft: "5px" }} />}
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      حذف
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Paper>
+                  جستجو
+                </Button>
+              </Box>
+              <FormControl
+                fullWidth
+                margin="dense"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
+              >
+                <Select
+                  value={userTypeFilter}
+                  onChange={(e) => setUserTypeFilter(e.target.value)}
+                >
+                  <MenuItem value="all">همه کاربران</MenuItem>
+                  <MenuItem value="admin">ادمین</MenuItem>
+                  <MenuItem value="writer">نویسنده</MenuItem>
+                  <MenuItem value="user">کاربر عادی</MenuItem>
+                </Select>
+              </FormControl>
+            </CacheProvider>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Add style={{ marginLeft: "5px" }} />}
+              onClick={() => setOpen(true)}
+              sx={{
+                mt: 3,
+                px: 3,
+                fontSize: "14px",
+                fontWeight: "bold",
+                borderRadius: "8px",
+              }}
+            >
+              افزودن کاربر جدید
+            </Button>
+          </Box>
+        </Grid>
 
+        <Grid item xs={12} md={12}>
+          <TableContainer component={Paper} sx={{ mt: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                    #
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                    نام
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                    ایمیل
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                    نوع کاربر
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>عملیات</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      <CircularProgress />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      هیچ کاربری ثبت نشده است.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell align="right">{e2p(user.id)}</TableCell>
+                      <TableCell align="right">{user.name}</TableCell>
+                      <TableCell align="right">{user.email}</TableCell>
+                      <TableCell align="right">
+                        {user?.userType === "admin"
+                          ? "ادمین"
+                          : user?.userType === "writer"
+                          ? "نویسنده"
+                          : "کاربر عادی"}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          color="success"
+                          onClick={() => {
+                            setEditOpen(true);
+                            setSelectedIndex(index);
+                            setEditUser(user);
+                          }}
+                          sx={{ ml: 1, borderRadius: "10px" }}
+                        >
+                          <Edit />
+                        </Button>
+                        <Button
+                          color="error"
+                          onClick={() => handleDelete(user.id)}
+                        >
+                          <Delete />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
       {/* دیالوگ افزودن کاربر */}
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>افزودن کاربر جدید</DialogTitle>
@@ -312,13 +403,6 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -334,13 +418,6 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -357,13 +434,6 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -380,18 +450,10 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
             <FormControl fullWidth margin="dense">
-              <InputLabel>نقش کاربر</InputLabel>
               <Select
                 value={newUser.userType}
                 onChange={(e) =>
@@ -403,13 +465,6 @@ const ManageUsers = () => {
                   boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "12px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#FF8B00",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#374BFF",
-                      borderWidth: "2px",
-                    },
                   },
                 }}
               >
@@ -445,13 +500,6 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -467,13 +515,6 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -489,13 +530,6 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -511,18 +545,10 @@ const ManageUsers = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
             <FormControl fullWidth margin="dense">
-              <InputLabel>نقش کاربر</InputLabel>
               <Select
                 value={editUser.userType}
                 onChange={(e) =>
@@ -534,13 +560,6 @@ const ManageUsers = () => {
                   boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "12px",
-                    "&:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#FF8B00",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#374BFF",
-                      borderWidth: "2px",
-                    },
                   },
                 }}
               >

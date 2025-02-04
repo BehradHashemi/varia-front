@@ -16,6 +16,7 @@ import WriteBlog from "./components/shared/Authentication/WriteBlog";
 import MyBlogs from "./components/shared/MyBlogs";
 import ManageBlogs from "./components/shared/Authentication/Admin/MangeBlogs";
 import ManageUsers from "./components/shared/Authentication/Admin/ManageUsers";
+import ManageDetailBlog from "./components/shared/Authentication/Admin/ManageDetailBlog";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/site-settings" element={<SiteSettings />} />
         <Route path="/manage-blogs" element={<ManageBlogs />} />
+        <Route path="/manage-blogs/:id" element={<ManageDetailBlog />} />
         <Route path="/manage-users" element={<ManageUsers />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<Register />} />
@@ -38,20 +40,18 @@ function App() {
         <Route path="/gallery" element={<Gallery />} />
       </Routes>
       <Footer></Footer>
-      <div
+
+      <h4
         style={{
           width: "100%",
-          background: "#ffffff",
           textAlign: "center",
         }}
       >
-        <h4>
-          طراحی شده با ❤️ توسط{" "}
-          <a href="https://behrad.liara.run" target="_blank">
-            بهراد هاشمی
-          </a>
-        </h4>
-      </div>
+        طراحی شده با ❤️ توسط{" "}
+        <a href="https://behrad.liara.run" target="_blank">
+          بهراد هاشمی
+        </a>
+      </h4>
     </>
   );
 }

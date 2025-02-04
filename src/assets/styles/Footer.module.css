@@ -4,13 +4,7 @@
   justify-content: space-between;
   align-items: flex-start;
   text-align: right;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  padding: 20px;
-  background-color: #fbfbfb;
-  -webkit-box-shadow: 0px 0px 29px 1px #cccccccc;
-  -moz-box-shadow: 0px 0px 29px 1px #cccccccc;
-  box-shadow: 0px 0px 29px 1px #cccccccc;
+  padding: 5px;
 }
 
 .footer li {

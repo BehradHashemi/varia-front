@@ -7,17 +7,23 @@ import {
   Grid,
   Avatar,
   useTheme,
-  useMediaQuery,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineLogout } from "react-icons/hi";
-import { MdOutlineArticle, MdPeople, MdSettings } from "react-icons/md";
+import {
+  MdDashboard,
+  MdOutlineArticle,
+  MdPeople,
+  MdSettings,
+} from "react-icons/md";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -28,10 +34,28 @@ const AdminPanel = () => {
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
+  const menuItems = [
+    {
+      text: "داشبورد",
+      icon: <MdDashboard />,
+      path: "/dashboard",
+    },
+    {
+      text: "تنظیمات سایت",
+      icon: <MdSettings />,
+      path: "/site-settings",
+    },
+    {
+      text: "مدیریت مقالات",
+      icon: <MdOutlineArticle />,
+      path: "/manage-blogs",
+    },
+    {
+      text: "مدیرت کاربران",
+      icon: <MdPeople />,
+      path: "/manage-users",
+    },
+  ];
 
   return (
     <Box
@@ -39,92 +63,64 @@ const AdminPanel = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        p: 1,
-        mb: 2,
+        my: 5,
+        height: "100%",
       }}
     >
-      <Paper
-        elevation={6}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          width: "100%",
-          maxWidth: "500px",
-          textAlign: "center",
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <Avatar
-          sx={{
-            width: 80,
-            height: 80,
-            bgcolor: theme.palette.error.main,
-            mx: "auto",
-            mb: 2,
-          }}
-        >
-          {user?.name.charAt(0).toUpperCase()}
-        </Avatar>
-        <Typography variant="h4" fontWeight="bold" mb={2}>
-          پنل مدیریت
-        </Typography>
-        <Typography variant="subtitle1" color="textSecondary" mb={2}>
-          {user?.email}
-        </Typography>
-        <Typography variant="body1" color="textSecondary" mb={3}>
-          ادمین سایت
-        </Typography>
-
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              startIcon={<MdOutlineArticle style={{ marginLeft: "5px" }} />}
-              onClick={() => navigate("/manage-blogs")}
-              sx={{ py: 1.5 }}
-            >
-              مدیریت مقالات
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="secondary"
-              startIcon={<MdPeople style={{ marginLeft: "5px" }} />}
-              onClick={() => navigate("/manage-users")}
-              sx={{ py: 1.5 }}
-            >
-              مدیریت کاربران
-            </Button>
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              fullWidth
-              variant="contained"
-              color="warning"
-              startIcon={<MdSettings style={{ marginLeft: "5px" }} />}
-              onClick={() => navigate("/site-settings")}
-              sx={{ py: 1.5 }}
-            >
-              تنظیمات سایت
-            </Button>
-          </Grid>
+      <Grid container spacing={1} sx={{ width: "100%", height: "100%" }}>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 3, textAlign: "center", borderRadius: "10px" }}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+              پنل ادمین
+            </Typography>
+            <List>
+              {menuItems.map((item, index) => (
+                <ListItem
+                  button
+                  key={index}
+                  onClick={() => navigate(item.path)}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
         </Grid>
-        <Button
-          fullWidth
-          variant="outlined"
-          color="error"
-          startIcon={<HiOutlineLogout style={{ marginLeft: "5px" }} />}
-          onClick={handleLogout}
-          sx={{ mt: 3, py: 1.5 }}
-        >
-          خروج از حساب
-        </Button>
-      </Paper>
+        <Grid item xs={12} md={8}>
+          <Paper
+            sx={{
+              p: 4,
+              textAlign: "right",
+              borderRadius: "10px",
+              height: "100%",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Avatar
+                sx={{
+                  width: 80,
+                  height: 80,
+                  bgcolor: theme.palette.error.main,
+                }}
+              >
+                {user?.name?.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box>
+                <Typography variant="h5" fontWeight="bold">
+                  {user?.name}
+                </Typography>
+                <Typography variant="subtitle1" color="textSecondary">
+                  {user?.email}
+                </Typography>
+                <Typography variant="body1" color="textSecondary">
+                  ادمین سایت
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 };

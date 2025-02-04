@@ -71,7 +71,7 @@ const WriteBlog = () => {
 
     try {
       const { data, error } = await supabase
-        .from("Fronck-Blogs") // نام جدول در Supabase
+        .from("Fronck-Blogs")
         .insert([blog])
         .select();
 
@@ -89,35 +89,34 @@ const WriteBlog = () => {
   };
 
   return (
-    <CacheProvider value={rtlCache}>
-      <Box
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        margin: "15px auto",
+        p: 1,
+      }}
+    >
+      <ToastContainer rtl />
+      <Paper
+        elevation={6}
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          margin: "15px auto",
-          p: 1,
+          p: 4,
+          borderRadius: 3,
+          width: "100%",
+          textAlign: "center",
         }}
       >
-        <ToastContainer rtl />
-        <Paper
-          elevation={6}
-          sx={{
-            p: 4,
-            borderRadius: 3,
-            width: "100%",
-            maxWidth: "600px",
-            textAlign: "center",
-          }}
+        <Typography variant="h4" fontWeight="bold" mb={3}>
+          نوشتن مقاله جدید
+        </Typography>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
-          <Typography variant="h4" fontWeight="bold" mb={3}>
-            نوشتن مقاله جدید
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
+          <CacheProvider value={rtlCache}>
             <TextField
               label="عنوان مقاله"
               variant="outlined"
@@ -129,13 +128,6 @@ const WriteBlog = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -150,13 +142,6 @@ const WriteBlog = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
@@ -171,60 +156,50 @@ const WriteBlog = () => {
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
                 },
               }}
             />
-            <TextField
-              label="متن مقاله"
-              variant="outlined"
-              name="content"
-              value={blog.content}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={5}
-              sx={{
-                textAlign: "right",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "12px",
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#FF8B00",
-                  },
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#374BFF",
-                    borderWidth: "2px",
-                  },
-                },
-              }}
+          </CacheProvider>
+          <TextField
+            dir="ltr"
+            label="متن مقاله"
+            variant="outlined"
+            name="content"
+            value={blog.content}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={30}
+            sx={{
+              textAlign: "right",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+              },
+            }}
+          />
+          <Typography variant="subtitle1" color="textSecondary">
+            تاریخ انتشار: {e2p(blog.date)}
+          </Typography>
+
+          {blog.image && (
+            <img
+              src={blog.image}
+              alt="Preview"
+              style={{ width: "65%", margin: "auto", borderRadius: 5 }}
             />
-            <Typography variant="subtitle1" color="textSecondary">
-              تاریخ انتشار: {e2p(blog.date)}
-            </Typography>
-            <Button variant="contained" component="label">
+          )}
+          <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
+            <Button variant="contained" component="label" sx={{ width: "100%" }}>
               آپلود تصویر
               <input type="file" hidden onChange={handleImageUpload} />
             </Button>
-            {blog.image && (
-              <img
-                src={blog.image}
-                alt="Preview"
-                style={{ width: "100%", marginTop: 10, borderRadius: 5 }}
-              />
-            )}
-            <Button type="submit" variant="contained" color="success">
+            <Button type="submit" variant="contained" color="success" sx={{ width: "40%" }}>
               ذخیره مقاله
             </Button>
           </Box>
-        </Paper>
-      </Box>
-    </CacheProvider>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 

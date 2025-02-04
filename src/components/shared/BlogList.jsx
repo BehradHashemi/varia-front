@@ -16,6 +16,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import e2p from "../../utils/persianNumber";
@@ -33,35 +34,12 @@ const styles = {
       borderRadius: "12px",
       backgroundColor: "#FFF",
       boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-      "&:hover .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#FF8B00",
-      },
-      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#374BFF",
-        borderWidth: "2px",
-      },
-    },
-    "& .MuiInputBase-input": {
-      padding: "12px 16px",
     },
   },
   selectInput: {
     borderRadius: "12px",
     backgroundColor: "#FFF",
     boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#FF8B00",
-    },
-    "&:hover .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#FF8B00",
-    },
-    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-      borderColor: "#374BFF",
-      borderWidth: "2px",
-    },
-    "& .MuiSelect-select": {
-      padding: "12px 16px",
-    },
   },
 };
 
@@ -78,22 +56,29 @@ const BlogList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("");
   const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchBlogs = async () => {
+    fetchBlogs();
+  }, []);
+  const fetchBlogs = async () => {
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from("Fronck-Blogs")
         .select("*")
-        .eq("status", "approved"); // فقط مقالاتی که approved هستند را دریافت کنید
+        .eq("status", "approved");
       if (error) {
-        console.error("Error fetching blogs:", error);
+        throw error;
       } else {
         setBlogs(data);
       }
-    };
-
-    fetchBlogs();
-  }, []);
+    } catch (error) {
+      toast.error("خطا در دریافت کاربران!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const allTags = useMemo(
     () => [...new Set(blogs.flatMap((blog) => blog.tags.split("،")))],
@@ -121,7 +106,7 @@ const BlogList = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 6, mb: 6 }}>
+    <Container sx={{ my: 6 }}>
       <Typography
         variant="h3"
         component="h1"
@@ -135,7 +120,6 @@ const BlogList = () => {
       >
         مقالات
       </Typography>
-
       <Box
         sx={{
           display: "flex",
@@ -182,10 +166,14 @@ const BlogList = () => {
         </CacheProvider>
       </Box>
 
-      <Grid container spacing={4}>
-        {filteredBlogs.map((blog) => (
-          <BlogCard key={blog.id} blog={blog} />
-        ))}
+      <Grid container spacing={1}>
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", m: "auto" }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          filteredBlogs.map((blog) => <BlogCard key={blog.id} blog={blog} />)
+        )}
       </Grid>
     </Container>
   );
@@ -199,14 +187,10 @@ const BlogCard = React.memo(({ blog }) => {
           height: "100%",
           display: "flex",
           flexDirection: "column",
+          justifyContent: "space-between",
           borderRadius: "16px",
           overflow: "hidden",
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-          transition: "transform 0.3s, box-shadow 0.3s",
-          "&:hover": {
-            transform: "translateY(-8px)",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-          },
           background: "rgba(255, 255, 255, 0.8)",
           backdropFilter: "blur(10px)",
           border: "1px solid rgba(255, 255, 255, 0.3)",
@@ -220,12 +204,21 @@ const BlogCard = React.memo(({ blog }) => {
             alt={blog.title}
             sx={{ objectFit: "cover" }}
           />
-          <CardContent sx={{ flexGrow: 1 }}>
+          <CardContent
+            sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
+          >
             <Typography
               variant="h6"
               component="h2"
-              gutterBottom
-              sx={{ fontWeight: "bold", color: "#374BFF" }}
+              sx={{
+                fontWeight: "bold",
+                color: "#374BFF",
+                minHeight: "50px",
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2,
+                overflow: "hidden",
+              }}
             >
               {blog.title}
             </Typography>
@@ -243,7 +236,16 @@ const BlogCard = React.memo(({ blog }) => {
             <Typography
               variant="body1"
               paragraph
-              sx={{ color: "text.secondary", fontSize: "0.9rem" }}
+              sx={{
+                color: "text.secondary",
+                fontSize: "0.9rem",
+                flexGrow: 1,
+                minHeight: "60px",
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 3,
+                overflow: "hidden",
+              }}
             >
               {blog.content.slice(0, 50)}...
             </Typography>

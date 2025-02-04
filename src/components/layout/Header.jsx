@@ -6,6 +6,8 @@ import { GoPerson } from "react-icons/go";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { HiMenuAlt3 } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
+import { IoPersonSharp } from "react-icons/io5";
+import { RiUserSettingsFill } from "react-icons/ri";
 function Header() {
   const [menuOpen, setMenuOpen] = useState(true);
   const [user, setUser] = useState(
@@ -70,41 +72,34 @@ function Header() {
         <NavLink to="/blogs">وبلاگ</NavLink>
       </nav>
 
-      <div id="btn_group">
+      <div>
         {user ? (
-          <div
-            className="user-info"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "6px 11px 6px 11px",
-              borderRadius: "12px",
-            }}
-          >
+          <div id="btn_group">
+            {user.userType === "admin" ? (
+              <Link
+                to="/admin-panel"
+                id="admin"
+                style={{
+                  backgroundColor: "#374bff",
+                  color: "#ff8b00",
+                }}
+              >
+                <RiUserSettingsFill />
+              </Link>
+            ) : (
+              ""
+            )}
             <Link
               to="/dashboard"
-              style={{ fontWeight: "bold", fontSize: "1rem", color: "#000" }}
-            >
-              {user.name}
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="logout-btn"
+              id="dashboard"
               style={{
-                backgroundColor: "#FF3B3B",
-                color: "#fff",
-                padding: "10px 25px",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: "bold",
-                transition: "0.3s",
-                "&:hover": { backgroundColor: "#D32F2F" },
+                backgroundColor: "#374bff",
+                color: "#ffffff",
+                margin: "12px",
               }}
             >
-              خروج
-            </button>
+              <IoPersonSharp />
+            </Link>
             <NavLink to="/cart" id="cart">
               <HiOutlineShoppingBag />
             </NavLink>

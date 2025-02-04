@@ -25,19 +25,19 @@ const MyBlogs = () => {
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    console.log("Stored User:", storedUser); // Debugging
-    if (storedUser?.userType === "writer" || storedUser?.userType === "admin") {
-      setUser(storedUser);
-      if (storedUser.id) {
-        console.log("User ID:", storedUser.id); // Debugging
-        fetchArticles(storedUser.id);
-      } else {
-        console.error("User ID is missing in the stored user object.");
-      }
-    } else {
-      navigate("/dashboard");
-    }
+    // const storedUser = JSON.parse(localStorage.getItem("user"));
+    // console.log("Stored User:", storedUser); // Debugging
+    // if (storedUser?.userType === "writer" || storedUser?.userType === "admin") {
+    //   setUser(storedUser);
+    //   if (storedUser.id) {
+    //     console.log("User ID:", storedUser.id); // Debugging
+    //     fetchArticles(storedUser.id);
+    //   } else {
+    //     console.error("User ID is missing in the stored user object.");
+    //   }
+    // } else {
+    navigate("/dashboard");
+    // }
   }, [navigate]);
 
   const fetchArticles = async (userId) => {
@@ -55,7 +55,10 @@ const MyBlogs = () => {
 
   const handleDelete = async (id) => {
     try {
-      const { error } = await supabase.from("Fronck-Blogs").delete().eq("id", id);
+      const { error } = await supabase
+        .from("Fronck-Blogs")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
       fetchArticles(user.id); // Refresh the list after deletion
     } catch (error) {
