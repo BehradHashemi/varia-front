@@ -68,21 +68,37 @@ const Register = () => {
         "پذیرش قوانین و مقررات الزامی است"
       ),
     }),
-    onSubmit: async ({ name, email, password, confirmPassword, userType }) => {
+    onSubmit: async ({ name, email, password, userType }) => {
       try {
-        const { data, error } = await supabase
-          .from("Fronck-Users")
-          .insert([{ name, email, password, confirmPassword, userType }]);
+        // ثبت‌نام کاربر در Supabase Auth
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
+        if (error) throw error;
+
+        const user = data.user;
+        if (!user) throw new Error("مشکلی در ثبت‌نام رخ داده است.");
+
+        // ذخیره اطلاعات اضافی در جدول profiles
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert([{ id: user.id, name, role: userType }]);
+
+        if (profileError) throw profileError;
+
+        // ذخیره اطلاعات در localStorage (بدون رمزعبور!)
         localStorage.setItem(
           "user",
-          JSON.stringify({ name, email, password, userType })
+          JSON.stringify({ id: user.id, role: userType })
         );
-        if (error) throw error;
+
         toast.success("ثبت‌نام موفقیت‌آمیز بود!", {
           position: "top-center",
           autoClose: 2000,
         });
+
         setTimeout(() => navigate("/dashboard"), 2000);
       } catch (error) {
         toast.error(error.message);
