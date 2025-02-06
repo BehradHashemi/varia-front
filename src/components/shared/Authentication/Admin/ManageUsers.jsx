@@ -15,391 +15,450 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
   CircularProgress,
   Grid,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  List,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { Delete, Add, Edit } from "@mui/icons-material";
+import {
+  Delete,
+  Add,
+  Edit,
+  VerifiedUser,
+  Person,
+  Engineering,
+  ToggleOff,
+  ToggleOn,
+} from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
 
+import { createClient } from "@supabase/supabase-js";
 const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
+  import.meta.env.VITE_SUPABASE_URL,
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODMyNzA5MCwiZXhwIjoyMDUzOTAzMDkwfQ._u8qKawemTP8Pju_TKY9wgk3RcQDI_eQFU_N41PgCgo"
 );
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
-import {
-  MdAdminPanelSettings,
-  MdDashboard,
-  MdOutlineArticle,
-} from "react-icons/md";
 import e2p from "../../../../utils/persianNumber";
+import moment from "moment-jalaali";
 const rtlCache = createCache({
   key: "muirtl",
   stylisPlugins: [prefixer, rtlPlugin],
 });
-
 const ManageUsers = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [userTypeFilter, setUserTypeFilter] = useState("all");
-  const [searchEmail, setSearchEmail] = useState("");
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    userType: "user",
-  });
-  const [editUser, setEditUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    userType: "user",
-  });
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+
+  const initialUserState = {
+    email: "",
+    password: "",
+    confirmPassword: "",
+    name: "",
+    role: "user",
+  };
+  const [newUser, setNewUser] = useState(initialUserState);
+  const [selectedUser, setSelectedUser] = useState(initialUserState);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser?.userType === "admin") {
-      setUser(storedUser);
+    const checkAdmin = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user?.id)
+        .single();
+      console.log(profile);
+
+      if (!user || profile?.role !== "admin") {
+        navigate("/dashboard");
+        return;
+      }
+      setCurrentUser(user);
       fetchUsers();
-    } else {
-      navigate("/dashboard");
-    }
+    };
+    checkAdmin();
   }, [navigate]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("Fronck-Users").select("*");
-      if (error) throw error;
-      setUsers(data);
+      const {
+        data: { users },
+        error: authError,
+      } = await supabase.auth.admin.listUsers();
+      if (authError) throw authError;
+
+      const { data: profiles, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, name, role, banned, lastsignin_at");
+      if (profileError) throw profileError;
+
+      const mergedUsers = users.map((user) => ({
+        ...user,
+        ...profiles.find((p) => p.id === user.id),
+      }));
+
+      setUsers(mergedUsers);
     } catch (error) {
-      toast.error("خطا در دریافت کاربران!");
+      toast.error(`خطا در دریافت کاربران: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleToggleUserStatus = async (userId, isBanned) => {
     try {
       const { error } = await supabase
-        .from("Fronck-Users")
-        .delete()
-        .eq("id", id);
+        .from("profiles")
+        .update({ banned: isBanned })
+        .eq("id", userId);
+
       if (error) throw error;
+
+      toast.success(
+        `وضعیت کاربر با موفقیت ${isBanned ? "غیرفعال" : "فعال"} شد!`
+      );
       fetchUsers();
-      toast.error("کاربر حذف شد.");
     } catch (error) {
-      toast.error("خطا در حذف کاربر!");
+      toast.error(`خطا در تغییر وضعیت: ${error.message}`);
     }
   };
 
-  const handleAddUser = async () => {
-    if (
-      !newUser.name ||
-      !newUser.email ||
-      !newUser.password ||
-      !newUser.confirmPassword ||
-      newUser.password !== newUser.confirmPassword
-    ) {
-      toast.warning("لطفاً تمامی فیلدها را پر کنید.");
+  const handleCreateUser = async () => {
+    if (!newUser.email || !newUser.password || !newUser.name || !newUser.role) {
+      toast.warning("لطفاً تمام فیلدهای ضروری را پر کنید!");
       return;
     }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("Fronck-Users")
-        .insert([newUser])
-        .select();
-      if (error) throw error;
-      fetchUsers();
-      setOpen(false);
-      setNewUser({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-        userType: "user",
-      });
-      toast.success("کاربر جدید اضافه شد.");
-    } catch (error) {
-      toast.error("خطا در افزودن کاربر!");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleEditUser = async () => {
-    if (
-      !editUser.name ||
-      !editUser.email ||
-      !editUser.password ||
-      !editUser.confirmPassword
-    ) {
-      toast.warning("لطفاً تمامی فیلدها را پر کنید.");
+    if (newUser.password !== newUser.confirmPassword) {
+      toast.warning("رمز عبور و تایید آن مطابقت ندارند!");
       return;
     }
+
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("Fronck-Users")
-        .update(editUser)
-        .eq("id", editUser.id);
-      if (error) throw error;
+      const { data: authUser, error: authError } =
+        await supabase.auth.admin.createUser({
+          email: newUser.email,
+          password: newUser.password,
+          email_confirm: true,
+          user_metadata: { name: newUser.name },
+        });
+      if (authError) throw authError;
+
+      const { error: profileError } = await supabase.from("profiles").insert([
+        {
+          id: authUser.user.id,
+          name: newUser.name,
+          role: newUser.role,
+          email: newUser.email,
+        },
+      ]);
+      if (profileError) throw profileError;
+
+      toast.success("کاربر با موفقیت ایجاد شد!");
+      setOpenDialog(false);
       fetchUsers();
-      setEditOpen(false);
-      toast.info("اطلاعات کاربر به‌روز شد.");
+      setNewUser(initialUserState);
     } catch (error) {
-      toast.error("خطا در به‌روزرسانی کاربر!");
+      toast.error(`خطا در ایجاد کاربر: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
-  const fetchUsersByEmail = async () => {
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser.email || !selectedUser.name || !selectedUser.role) {
+      toast.warning("لطفاً تمام فیلدهای ضروری را پر کنید!");
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("Fronck-Users")
-        .select("*")
-        .ilike("email", `%${searchEmail}%`);
-      if (error) throw error;
-      setUsers(data);
+      const { error: authError } = await supabase.auth.admin.updateUserById(
+        selectedUser.id,
+        {
+          email: selectedUser.email,
+          user_metadata: { name: selectedUser.name },
+        }
+      );
+      if (authError) throw authError;
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          name: selectedUser.name,
+          role: selectedUser.role,
+          email: selectedUser.email,
+        })
+        .eq("id", selectedUser.id);
+      if (profileError) throw profileError;
+
+      toast.success("اطلاعات کاربر با موفقیت به‌روز شد!");
+      setEditDialog(false);
+      fetchUsers();
     } catch (error) {
-      toast.error("خطا در دریافت کاربران!");
+      toast.error(`❌ خطا در به‌روزرسانی: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
-      userTypeFilter === "all" ||
-      user.userType?.toLowerCase() === userTypeFilter.toLowerCase()
-  );
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm("آیا از حذف این کاربر اطمینان دارید؟")) {
+      try {
+        const { error: authError } = await supabase.auth.admin.deleteUser(
+          userId
+        );
+        if (authError) throw authError;
 
-  const menuItems = [
-    {
-      text: "داشبورد",
-      icon: <MdDashboard />,
-      path: "/dashboard",
-    },
-    {
-      text: "مدیریت سایت",
-      icon: <MdAdminPanelSettings />,
-      path: "/admin-panel",
-    },
-    {
-      text: "مدیریت مقالات",
-      icon: <MdOutlineArticle />,
-      path: "/manage-blogs",
-    },
-  ];
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .delete()
+          .eq("id", userId);
+        if (profileError) throw profileError;
+
+        toast.success("کاربر با موفقیت حذف شد!");
+        fetchUsers();
+      } catch (error) {
+        toast.error(`خطا در حذف کاربر: ${error.message}`);
+      }
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesSearch =
+      user.email.includes(searchTerm) || user.name?.includes(searchTerm);
+    return matchesRole && matchesSearch;
+  });
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        my: 5,
-        height: "100%",
-        direction: "rtl",
-      }}
-    >
+    <Box sx={{ p: 3, direction: "rtl" }}>
       <ToastContainer rtl />
-      <Grid container spacing={2} sx={{ width: "100%", height: "100%" }}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 4, textAlign: "center", borderRadius: "10px" }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-              مدریت کاربران
-            </Typography>
-            <List>
-              {menuItems.map((item, index) => (
-                <ListItem
-                  button
-                  key={index}
-                  onClick={() => navigate(item.path)}
-                >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ p: 1, textAlign: "center", borderRadius: "10px" }}>
-            <CacheProvider value={rtlCache}>
-              <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-                <TextField
-                  label="جستجو بر اساس ایمیل"
-                  variant="outlined"
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && fetchUsersByEmail()}
-                  fullWidth
-                  sx={{
-                    textAlign: "rgiht",
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "12px",
-                    },
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  onClick={fetchUsersByEmail}
-                  sx={{
-                    px: 3,
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                    borderRadius: "8px",
-                  }}
-                >
-                  جستجو
-                </Button>
-              </Box>
-              <FormControl
-                fullWidth
-                margin="dense"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                  },
-                }}
-              >
-                <Select
-                  value={userTypeFilter}
-                  onChange={(e) => setUserTypeFilter(e.target.value)}
-                >
-                  <MenuItem value="all">همه کاربران</MenuItem>
-                  <MenuItem value="admin">ادمین</MenuItem>
-                  <MenuItem value="writer">نویسنده</MenuItem>
-                  <MenuItem value="user">کاربر عادی</MenuItem>
-                </Select>
-              </FormControl>
-            </CacheProvider>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<Add style={{ marginLeft: "5px" }} />}
-              onClick={() => setOpen(true)}
-              sx={{
-                mt: 3,
-                px: 3,
-                fontSize: "14px",
-                fontWeight: "bold",
-                borderRadius: "8px",
-              }}
-            >
-              افزودن کاربر جدید
-            </Button>
-          </Box>
-        </Grid>
 
-        <Grid item xs={12} md={12}>
-          <TableContainer component={Paper} sx={{ mt: 3 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                    #
+      <Box sx={{ mb: 4, display: "flex", gap: 2, flexWrap: "wrap" }}>
+        <Button
+          variant="contained"
+          startIcon={<Add style={{ marginLeft: "5px" }} />}
+          onClick={() => setOpenDialog(true)}
+          sx={{
+            minWidth: 200,
+            textAlign: "right",
+            borderRadius: "12px",
+          }}
+        >
+          کاربر جدید
+        </Button>
+        <CacheProvider value={rtlCache}>
+          <FormControl
+            sx={{
+              minWidth: 150,
+              textAlign: "center",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+              },
+            }}
+          >
+            <InputLabel>فیلتر نقش</InputLabel>
+            <Select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              label="فیلتر نقش"
+            >
+              <MenuItem value="all">همه</MenuItem>
+              <MenuItem value="admin">مدیر</MenuItem>
+              <MenuItem value="writer">نویسنده</MenuItem>
+              <MenuItem value="user">کاربر عادی</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            label="جستجو (ایمیل یا نام)"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{
+              flexGrow: 1,
+              textAlign: "right",
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+              },
+            }}
+          />
+        </CacheProvider>
+      </Box>
+
+      {/* جدول کاربران */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead sx={{ bgcolor: "background.paper" }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                #
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                نام
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                ایمیل
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                نقش
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                وضعیت
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                آخرین بازدید
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                عملیات
+              </TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  کاربری یافت نشد
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredUsers.map((user, index) => (
+                <TableRow key={user.id} hover>
+                  <TableCell sx={{ textAlign: "right" }}>
+                    {e2p(index + 1)}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                    نام
+                  <TableCell sx={{ textAlign: "right" }}>
+                    {user.name || "-"}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                    ایمیل
+                  <TableCell sx={{ textAlign: "right" }}>
+                    {user.email}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                    نوع کاربر
+                  <TableCell sx={{ textAlign: "right" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      {user.role === "admin" ? (
+                        <VerifiedUser color="primary" />
+                      ) : user.role === "writer" ? (
+                        <Engineering color="secondary" />
+                      ) : (
+                        <Person color="disabled" />
+                      )}
+                      {user.role === "admin"
+                        ? "مدیر"
+                        : user.role === "writer"
+                        ? "نویسنده"
+                        : "کاربر"}
+                    </Box>
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>عملیات</TableCell>
+                  <TableCell sx={{ textAlign: "right" }}>
+                    <Box
+                      sx={{
+                        bgcolor: user.banned ? "error.light" : "success.light",
+                        color: "white",
+                        px: 1,
+                        borderRadius: 1,
+                        display: "inline-block",
+                        cursor: "pointer",
+                      }}
+                      onClick={() =>
+                        handleToggleUserStatus(user.id, !user.banned)
+                      }
+                    >
+                      {user.banned ? "غیرفعال" : "فعال"}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ textAlign: "right" }}>
+                    {e2p(
+                      moment(user?.lastsignin_at)
+                        .locale("fa")
+                        .format("jYYYY/jMM/jDD")
+                    )}
+                  </TableCell>
+
+                  <TableCell sx={{ textAlign: "left" }}>
+                    <Tooltip title="ویرایش">
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          setSelectedUser({
+                            id: user.id,
+                            email: user.email,
+                            name: user.name,
+                            role: user.role,
+                          });
+                          setEditDialog(true);
+                        }}
+                      >
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="حذف">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteUser(user.id)}
+                        disabled={user.id === currentUser?.id}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      <CircularProgress />
-                    </TableCell>
-                  </TableRow>
-                ) : filteredUsers.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      هیچ کاربری ثبت نشده است.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell align="right">{e2p(user.id)}</TableCell>
-                      <TableCell align="right">{user.name}</TableCell>
-                      <TableCell align="right">{user.email}</TableCell>
-                      <TableCell align="right">
-                        {user?.userType === "admin"
-                          ? "ادمین"
-                          : user?.userType === "writer"
-                          ? "نویسنده"
-                          : "کاربر عادی"}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          color="success"
-                          onClick={() => {
-                            setEditOpen(true);
-                            setSelectedIndex(index);
-                            setEditUser(user);
-                          }}
-                          sx={{ ml: 1, borderRadius: "10px" }}
-                        >
-                          <Edit />
-                        </Button>
-                        <Button
-                          color="error"
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          <Delete />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-      </Grid>
-      {/* دیالوگ افزودن کاربر */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>افزودن کاربر جدید</DialogTitle>
-        <DialogContent>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>ایجاد کاربر جدید</DialogTitle>
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            pt: 2,
+            my: 2,
+          }}
+        >
           <CacheProvider value={rtlCache}>
             <TextField
-              label="نام"
-              fullWidth
-              margin="dense"
+              label="نام کامل"
               value={newUser.name}
               onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+              required
               sx={{
+                mt: 2,
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
@@ -408,12 +467,12 @@ const ManageUsers = () => {
             />
             <TextField
               label="ایمیل"
-              fullWidth
-              margin="dense"
+              type="email"
               value={newUser.email}
               onChange={(e) =>
                 setNewUser({ ...newUser, email: e.target.value })
               }
+              required
               sx={{
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
@@ -424,12 +483,11 @@ const ManageUsers = () => {
             <TextField
               label="رمز عبور"
               type="password"
-              fullWidth
-              margin="dense"
               value={newUser.password}
               onChange={(e) =>
                 setNewUser({ ...newUser, password: e.target.value })
               }
+              required
               sx={{
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
@@ -438,14 +496,13 @@ const ManageUsers = () => {
               }}
             />
             <TextField
-              label="تایید رمز عبور"
+              label="تکرار رمز عبور"
               type="password"
-              fullWidth
-              margin="dense"
               value={newUser.confirmPassword}
               onChange={(e) =>
                 setNewUser({ ...newUser, confirmPassword: e.target.value })
               }
+              required
               sx={{
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
@@ -453,50 +510,70 @@ const ManageUsers = () => {
                 },
               }}
             />
-            <FormControl fullWidth margin="dense">
-              <Select
-                value={newUser.userType}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, userType: e.target.value })
-                }
-                sx={{
+            <FormControl
+              fullWidth
+              sx={{
+                textAlign: "center",
+                "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
-                  backgroundColor: "#FFF",
-                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                  },
-                }}
+                },
+              }}
+            >
+              <InputLabel>نقش کاربر</InputLabel>
+              <Select
+                value={newUser.role}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, role: e.target.value })
+                }
+                label="نقش کاربر"
               >
                 <MenuItem value="user">کاربر عادی</MenuItem>
                 <MenuItem value="writer">نویسنده</MenuItem>
+                <MenuItem value="admin">مدیر سیستم</MenuItem>
               </Select>
             </FormControl>
           </CacheProvider>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)} color="secondary">
+          <Button onClick={() => setOpenDialog(false)} color="secondary">
             لغو
           </Button>
-          <Button onClick={handleAddUser} color="primary">
-            افزودن
+          <Button
+            onClick={handleCreateUser}
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "ایجاد کاربر"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-        <DialogTitle>ویرایش اطلاعات کاربر</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={editDialog}
+        onClose={() => setEditDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>ویرایش کاربر</DialogTitle>
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            pt: 2,
+            my: 2,
+          }}
+        >
           <CacheProvider value={rtlCache}>
             <TextField
-              label="نام"
-              fullWidth
-              margin="dense"
-              value={editUser.name}
+              label="نام کامل"
+              value={selectedUser.name}
               onChange={(e) =>
-                setEditUser({ ...editUser, name: e.target.value })
+                setSelectedUser({ ...selectedUser, name: e.target.value })
               }
+              required
               sx={{
+                mt: 2,
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
@@ -505,12 +582,12 @@ const ManageUsers = () => {
             />
             <TextField
               label="ایمیل"
-              fullWidth
-              margin="dense"
-              value={editUser.email}
+              type="email"
+              value={selectedUser.email}
               onChange={(e) =>
-                setEditUser({ ...editUser, email: e.target.value })
+                setSelectedUser({ ...selectedUser, email: e.target.value })
               }
+              required
               sx={{
                 textAlign: "right",
                 "& .MuiOutlinedInput-root": {
@@ -518,64 +595,40 @@ const ManageUsers = () => {
                 },
               }}
             />
-            <TextField
-              label="رمز عبور"
+            <FormControl
               fullWidth
-              margin="dense"
-              value={editUser.password}
-              onChange={(e) =>
-                setEditUser({ ...editUser, password: e.target.value })
-              }
               sx={{
-                textAlign: "right",
+                textAlign: "center",
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "12px",
                 },
               }}
-            />
-            <TextField
-              label="تایید رمز عبور"
-              fullWidth
-              margin="dense"
-              value={editUser.confirmPassword}
-              onChange={(e) =>
-                setEditUser({ ...editUser, confirmPassword: e.target.value })
-              }
-              sx={{
-                textAlign: "right",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "12px",
-                },
-              }}
-            />
-            <FormControl fullWidth margin="dense">
+            >
+              <InputLabel>نقش کاربر</InputLabel>
               <Select
-                value={editUser.userType}
+                value={selectedUser.role}
                 onChange={(e) =>
-                  setEditUser({ ...editUser, userType: e.target.value })
+                  setSelectedUser({ ...selectedUser, role: e.target.value })
                 }
-                sx={{
-                  borderRadius: "12px",
-                  backgroundColor: "#FFF",
-                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "12px",
-                  },
-                }}
+                label="نقش کاربر"
               >
-                <MenuItem value="admin">ادمین</MenuItem>
                 <MenuItem value="user">کاربر عادی</MenuItem>
                 <MenuItem value="writer">نویسنده</MenuItem>
+                <MenuItem value="admin">مدیر سیستم</MenuItem>
               </Select>
             </FormControl>
           </CacheProvider>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditOpen(false)} color="secondary">
+          <Button onClick={() => setEditDialog(false)} color="secondary">
             لغو
           </Button>
-          <Button onClick={handleEditUser} color="primary">
-            ذخیره
+          <Button
+            onClick={handleUpdateUser}
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "ذخیره تغییرات"}
           </Button>
         </DialogActions>
       </Dialog>

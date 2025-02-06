@@ -8,59 +8,79 @@ import {
   Button,
   Avatar,
   Chip,
-  Divider,
+  CircularProgress,
 } from "@mui/material";
+import e2p from "../../utils/persianNumber";
 import { useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
-import e2p from "../../utils/persianNumber";
 
-const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const MyBlogs = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState([]);
   const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // const storedUser = JSON.parse(localStorage.getItem("user"));
-    // console.log("Stored User:", storedUser); // Debugging
-    // if (storedUser?.userType === "writer" || storedUser?.userType === "admin") {
-    //   setUser(storedUser);
-    //   if (storedUser.id) {
-    //     console.log("User ID:", storedUser.id); // Debugging
-    //     fetchArticles(storedUser.id);
-    //   } else {
-    //     console.error("User ID is missing in the stored user object.");
-    //   }
-    // } else {
-    navigate("/dashboard");
-    // }
+    const fetchUser = async () => {
+      const { data: userData, error } = await supabase.auth.getUser();
+      if (error || !userData.user) {
+        navigate("/dashboard");
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, name, role")
+        .eq("id", userData.user.id)
+        .single();
+
+      if (
+        profileError ||
+        (profile.role !== "writer" && profile.role !== "admin")
+      ) {
+        navigate("/dashboard");
+        return;
+      }
+
+      setUser(profile);
+      fetchArticles(profile.id);
+    };
+    fetchUser();
   }, [navigate]);
 
   const fetchArticles = async (userId) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
-        .from("Fronck-Blogs") // Ensure the table name is correct
+        .from("Fronck-Blogs")
         .select("*")
-        .eq("author_id", userId); // Ensure the column name is correct
+        .eq("author_id", userId);
+
       if (error) throw error;
       setArticles(data);
     } catch (error) {
       console.error("خطا در دریافت مقالات:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, authorId) => {
+    if (user.id !== authorId) {
+      console.error("شما مجاز به حذف این مقاله نیستید!");
+      return;
+    }
     try {
       const { error } = await supabase
         .from("Fronck-Blogs")
         .delete()
         .eq("id", id);
       if (error) throw error;
-      fetchArticles(user.id); // Refresh the list after deletion
+      fetchArticles(user.id);
     } catch (error) {
       console.error("خطا در حذف مقاله:", error);
     }
@@ -72,137 +92,101 @@ const MyBlogs = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        margin: "15px auto",
-        p: 1,
+        margin: "20px auto",
       }}
     >
-      <Paper
-        elevation={6}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          width: "100%",
-          maxWidth: "900px",
-          textAlign: "center",
-          backgroundColor: "#f9f9f9",
-        }}
+      <Typography variant="h4" fontWeight="bold" mb={3}>
+        مقالات من
+      </Typography>
+      <Button
+        variant="contained"
+        color="success"
+        sx={{ my: 2, borderRadius: "20px", fontWeight: "bold" }}
+        onClick={() => navigate("/write-blog")}
       >
-        <Typography variant="h4" fontWeight="bold" mb={3} color="#333">
-          مقالات من
+        مقاله جدید
+      </Button>
+      <br />
+      {loading ? (
+        <CircularProgress sx={{ my: "20px", mx: "auto" }} />
+      ) : articles.length === 0 ? (
+        <Typography color="textSecondary">
+          هنوز هیچ مقاله‌ای ثبت نشده است.
         </Typography>
-        {articles.length === 0 ? (
-          <Typography color="textSecondary">
-            هنوز هیچ مقاله‌ای ثبت نشده است.
-          </Typography>
-        ) : (
-          <List>
-            {articles.map((article) => (
-              <ListItem
-                key={article.id}
+      ) : (
+        <List>
+          {articles.map((article) => (
+            <ListItem
+              key={article.id}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                textAlign: "right",
+                borderRadius: 3,
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                mb: 3,
+                boxShadow: "0 6px 15px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              {article.image && (
+                <Avatar
+                  variant="rounded"
+                  src={article.image}
+                  alt="article-img"
+                  sx={{ width: "60%", height: 200, mb: 2, borderRadius: 3 }}
+                />
+              )}
+              <Typography variant="h6" fontWeight="bold" color="#333">
+                {article.title}
+              </Typography>
+              <Typography variant="body2" color="textSecondary" mt={1}>
+                {article.content.slice(0, 50)}...
+              </Typography>
+              <Box
                 sx={{
                   display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  textAlign: "left",
-                  p: 2,
-                  borderRadius: 2,
-                  backgroundColor: "white",
-                  mb: 2,
-                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  mt: 2,
                 }}
               >
-                {article.image && (
-                  <Avatar
-                    variant="rounded"
-                    src={article.image}
-                    alt="article-img"
-                    sx={{ width: "100%", height: 200, mb: 2, borderRadius: 2 }}
-                  />
-                )}
-                <Typography variant="h6" fontWeight="bold" color="#333">
-                  {article.title}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" mt={1}>
-                  {article.content.slice(0, 80)}...
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    mt: 2,
-                  }}
+                <Chip
+                  label={e2p(article.date)}
+                  color="primary"
+                  variant="outlined"
+                />
+                <Chip
+                  label={`نویسنده: ${article.author || "نامشخص"}`}
+                  color="secondary"
+                  variant="outlined"
+                />
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  mt: 2,
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleDelete(article.id, article.author_id)}
                 >
-                  <Chip
-                    label={e2p(article.date)}
-                    color="primary"
-                    variant="outlined"
-                    sx={{ fontSize: "14px", fontWeight: "bold" }}
-                  />
-                  <Chip
-                    label={`نویسنده: ${article.author}`}
-                    color="secondary"
-                    variant="outlined"
-                    sx={{ fontSize: "14px", fontWeight: "bold" }}
-                  />
-                </Box>
-                <Typography
-                  variant="subtitle2"
-                  color={
-                    article.status === "approved"
-                      ? "green"
-                      : article.status === "rejected"
-                      ? "red"
-                      : "orange"
-                  }
-                  sx={{ mt: 1, fontWeight: "bold" }}
-                >
-                  {article.status === "approved"
-                    ? "تایید شده"
-                    : article.status === "rejected"
-                    ? "رد شده"
-                    : "در انتظار تایید"}
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    mt: 2,
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="error"
-                    sx={{ alignSelf: "flex-end" }}
-                    onClick={() => handleDelete(article.id)}
-                  >
-                    حذف مقاله
+                  حذف مقاله
+                </Button>
+                {article.status === "rejected" && (
+                  <Button variant="contained" color="warning">
+                    ویرایش و ارسال مجدد
                   </Button>
-                  {article.status === "rejected" && (
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      sx={{ alignSelf: "flex-end" }}
-                      onClick={() => navigate(`/write-blog/${article.id}`)}
-                    >
-                      ویرایش و ارسال مجدد
-                    </Button>
-                  )}
-                </Box>
-              </ListItem>
-            ))}
-          </List>
-        )}
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mt: 2 }}
-          onClick={() => navigate("/write-blog")}
-        >
-          مقاله جدید
-        </Button>
-      </Paper>
+                )}
+              </Box>
+            </ListItem>
+          ))}
+        </List>
+      )}
     </Box>
   );
 };

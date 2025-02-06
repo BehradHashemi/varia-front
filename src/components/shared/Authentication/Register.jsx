@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   Button,
@@ -19,10 +19,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -35,10 +34,14 @@ const rtlCache = createCache({
 
 const Register = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("user")) {
-      navigate("/dashboard");
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user) navigate("/dashboard");
+    } catch (err) {
+      console.error("خطا در دسترسی به localStorage", err);
     }
   }, [navigate]);
 
@@ -70,7 +73,7 @@ const Register = () => {
     }),
     onSubmit: async ({ name, email, password, userType }) => {
       try {
-        // ثبت‌نام کاربر در Supabase Auth
+        setLoading(true);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -81,14 +84,17 @@ const Register = () => {
         const user = data.user;
         if (!user) throw new Error("مشکلی در ثبت‌نام رخ داده است.");
 
-        // ذخیره اطلاعات اضافی در جدول profiles
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert([{ id: user.id, name, role: userType }]);
+        const { error: profileError } = await supabase.from("profiles").insert([
+          {
+            id: user.id,
+            name,
+            role: userType,
+            created_at: new Date().toISOString(),
+          },
+        ]);
 
         if (profileError) throw profileError;
 
-        // ذخیره اطلاعات در localStorage (بدون رمزعبور!)
         localStorage.setItem(
           "user",
           JSON.stringify({ id: user.id, role: userType })
@@ -102,6 +108,7 @@ const Register = () => {
         setTimeout(() => navigate("/dashboard"), 2000);
       } catch (error) {
         toast.error(error.message);
+        setLoading(false);
       }
     },
   });
@@ -143,12 +150,24 @@ const Register = () => {
               {...formik.getFieldProps("name")}
               error={formik.touched.name && Boolean(formik.errors.name)}
               helperText={formik.touched.name && formik.errors.name}
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                },
+              }}
             />
             <TextField
               label="ایمیل"
               {...formik.getFieldProps("email")}
               error={formik.touched.email && Boolean(formik.errors.email)}
               helperText={formik.touched.email && formik.errors.email}
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                },
+              }}
             />
             <TextField
               label="رمز عبور"
@@ -156,6 +175,12 @@ const Register = () => {
               {...formik.getFieldProps("password")}
               error={formik.touched.password && Boolean(formik.errors.password)}
               helperText={formik.touched.password && formik.errors.password}
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                },
+              }}
             />
             <TextField
               label="تایید رمز عبور"
@@ -168,14 +193,29 @@ const Register = () => {
               helperText={
                 formik.touched.confirmPassword && formik.errors.confirmPassword
               }
+              sx={{
+                textAlign: "right",
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                },
+              }}
             />
-            <FormControl fullWidth>
-              <InputLabel>نوع کاربر</InputLabel>
+            <FormControl
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "12px",
+                },
+              }}
+            >
               <Select
                 {...formik.getFieldProps("userType")}
                 error={
                   formik.touched.userType && Boolean(formik.errors.userType)
                 }
+                sx={{
+                  textAlign: "left",
+                }}
               >
                 <MenuItem value="user">کاربر</MenuItem>
                 <MenuItem value="writer">نویسنده</MenuItem>
@@ -186,6 +226,7 @@ const Register = () => {
                 <Checkbox
                   {...formik.getFieldProps("acceptTerms")}
                   sx={{
+                    my: 2,
                     width: 15,
                     height: 15,
                     borderRadius: 2,
@@ -229,15 +270,31 @@ const Register = () => {
             <Button
               type="submit"
               variant="contained"
+              size="large"
+              disabled={loading}
               sx={{
                 backgroundColor: "#ff8b00",
                 borderRadius: "12px",
                 boxShadow: "0 6px 15px rgba(255, 139, 0, 0.5)",
               }}
             >
-              ثبت نام
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "ثبت نام"
+              )}
             </Button>
-            <Link to="/login">حساب کاربری دارید؟ ورود</Link>
+            <Box
+              sx={{ mt: 1, display: "flex", justifyContent: "space-between" }}
+            >
+              <Button
+                component={Link}
+                to="/login"
+                sx={{ textDecoration: "none", color: "#ff8b00" }}
+              >
+                ورود به حساب
+              </Button>
+            </Box>
           </Box>
         </CacheProvider>
       </Paper>

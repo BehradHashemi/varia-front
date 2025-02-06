@@ -3,17 +3,12 @@ import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-import moment from "moment-jalaali";
 import e2p from "../../../utils/persianNumber";
-
 import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
-);
-
+import moment from "moment-jalaali";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import { prefixer } from "stylis";
@@ -22,28 +17,48 @@ const rtlCache = createCache({
   key: "muirtl",
   stylisPlugins: [prefixer, rtlPlugin],
 });
-
 const WriteBlog = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser?.userType === "writer" || storedUser?.userType === "admin") {
-      setUser(storedUser);
-    } else {
-      navigate("/dashboard");
-    }
-  }, [navigate]);
   const [blog, setBlog] = useState({
     title: "",
     content: "",
     tags: "",
-    author: "",
     date: moment().format("jYYYY/jMM/jDD"),
     image: "",
     status: "pending",
   });
+  const [imageSelected, setImageSelected] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data.user) return navigate("/dashboard");
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, name, role")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profileError || !profile || profile.role === "user") {
+          return navigate("/dashboard");
+        }
+
+        setUser({
+          id: data.user.id,
+          author_id: profile.id,
+          name: profile.name,
+          role: profile.role,
+        });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        navigate("/dashboard");
+      }
+    };
+    fetchUser();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setBlog({ ...blog, [e.target.name]: e.target.value });
@@ -55,6 +70,7 @@ const WriteBlog = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setBlog({ ...blog, image: reader.result });
+        setImageSelected(true);
       };
       reader.readAsDataURL(file);
     }
@@ -62,19 +78,22 @@ const WriteBlog = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!blog.title || !blog.content || !blog.author) {
-      toast.error("تمام فیلدهای الزامی باید پر شوند.", {
-        position: "top-center",
-      });
+    if (!blog.title.trim() || !blog.content.trim()) {
+      toast.error("عنوان و محتوا الزامی هستند!", { position: "top-center" });
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from("Fronck-Blogs")
-        .insert([blog])
-        .select();
+      const newBlog = {
+        ...blog,
+        title: blog.title.trim(),
+        content: blog.content.trim(),
+        tags: blog.tags.trim(),
+        author: user.name,
+        author_id: user.author_id,
+      };
 
+      const { error } = await supabase.from("Fronck-Blogs").insert([newBlog]);
       if (error) throw error;
 
       toast.success("مقاله در انتظار تایید قرار گرفت.", {
@@ -82,9 +101,7 @@ const WriteBlog = () => {
       });
       setTimeout(() => navigate("/my-blogs"), 2000);
     } catch (error) {
-      toast.error("خطا در ذخیره مقاله!", {
-        position: "top-center",
-      });
+      toast.error("خطا در ذخیره مقاله!", { position: "top-center" });
     }
   };
 
@@ -101,12 +118,7 @@ const WriteBlog = () => {
       <ToastContainer rtl />
       <Paper
         elevation={6}
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          width: "100%",
-          textAlign: "center",
-        }}
+        sx={{ p: 4, borderRadius: 3, width: "100%", textAlign: "center" }}
       >
         <Typography variant="h4" fontWeight="bold" mb={3}>
           نوشتن مقاله جدید
@@ -122,20 +134,6 @@ const WriteBlog = () => {
               variant="outlined"
               name="title"
               value={blog.title}
-              onChange={handleChange}
-              fullWidth
-              sx={{
-                textAlign: "right",
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "12px",
-                },
-              }}
-            />
-            <TextField
-              label="نام نویسنده"
-              variant="outlined"
-              name="author"
-              value={blog.author}
               onChange={handleChange}
               fullWidth
               sx={{
@@ -169,7 +167,7 @@ const WriteBlog = () => {
             onChange={handleChange}
             fullWidth
             multiline
-            rows={30}
+            rows={20}
             sx={{
               textAlign: "right",
               "& .MuiOutlinedInput-root": {
@@ -189,11 +187,20 @@ const WriteBlog = () => {
             />
           )}
           <Box sx={{ width: "100%", display: "flex", gap: 2 }}>
-            <Button variant="contained" component="label" sx={{ width: "100%" }}>
-              آپلود تصویر
+            <Button
+              variant="contained"
+              component="label"
+              sx={{ width: "100%" }}
+            >
+              {imageSelected ? "تصویر انتخاب شد" : "آپلود تصویر"}
               <input type="file" hidden onChange={handleImageUpload} />
             </Button>
-            <Button type="submit" variant="contained" color="success" sx={{ width: "40%" }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="success"
+              sx={{ width: "40%" }}
+            >
               ذخیره مقاله
             </Button>
           </Box>

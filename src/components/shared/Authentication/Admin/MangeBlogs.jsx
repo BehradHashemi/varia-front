@@ -25,10 +25,9 @@ import e2p from "../../../../utils/persianNumber";
 import { MdAdminPanelSettings, MdDashboard, MdPeople } from "react-icons/md";
 
 import { createClient } from "@supabase/supabase-js";
-const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const ManageBlogs = () => {
   const navigate = useNavigate();
@@ -39,13 +38,34 @@ const ManageBlogs = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [filter, setFilter] = useState("all");
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser?.userType === "admin") {
-      setUser(storedUser);
-      fetchArticles();
-    } else {
-      navigate("/dashboard");
-    }
+    const fetchUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data.user) return navigate("/dashboard");
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, name, role,banned")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profileError || !profile || profile.role === "user") {
+          return navigate("/dashboard");
+        }
+
+        setUser({
+          id: data.user.id,
+          author_id: profile.id,
+          name: profile.name,
+          role: profile.role,
+        });
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        navigate("/dashboard");
+      }
+    };
+    fetchUser();
+    fetchArticles();
   }, [navigate, filter]);
 
   const fetchArticles = async () => {
@@ -143,7 +163,15 @@ const ManageBlogs = () => {
               bgcolor: "#fff",
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+            <Typography
+              variant="h5"
+              sx={{
+                mb: 3,
+                fontWeight: 700,
+                color: "primary.main",
+                textAlign: "center",
+              }}
+            >
               مدریت مقالات
             </Typography>
             <List>

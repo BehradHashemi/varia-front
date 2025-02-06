@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { TextField, Button, Box, Typography, Paper } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Paper,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+} from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -20,16 +29,37 @@ const rtlCache = createCache({
   key: "muirtl",
   stylisPlugins: [prefixer, rtlPlugin],
 });
-
 const Login = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("user")) {
-      navigate("/dashboard");
-    }
+    const checkSession = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) navigate("/dashboard");
+    };
+    checkSession();
   }, [navigate]);
+  const checkUserStatus = async (userId) => {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("banned")
+      .eq("id", userId)
+      .single();
 
+    if (error) {
+      console.error("خطا در بررسی وضعیت کاربر:", error);
+      return;
+    }
+
+    if (profile?.banned) {
+      await supabase.auth.signOut();
+      toast.error("حساب شما غیرفعال شده است.");
+    }
+  };
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -45,55 +75,102 @@ const Login = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const { data, error } = await supabase
-          .from("Fronck-Users")
-          .select("*")
-          .eq("email", values.email)
-          .eq("password", values.password)
+        setLoading(true);
+        checkUserStatus();
+        const { data, error: authError } =
+          await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+          });
+
+        if (authError) throw authError;
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, role, name")
+          .eq("id", data.user.id)
           .single();
 
-        if (error) throw error;
+        if (profileError?.code === "PGRST116") {
+          const { error: createProfileError } = await supabase
+            .from("profiles")
+            .insert([
+              {
+                id: data.user.id,
+                email: data.user.email,
+                role: "user",
+                name: "",
+              },
+            ]);
 
-        if (data) {
-          localStorage.setItem(
-            "user",
-            JSON.stringify({
-              name: data.name,
-              email: data.email,
-              userType: data.userType,
-            })
-          );
-
-          toast.success(`${data.name} عزیز خوش آمدید!`, {
-            position: "top-center",
-            autoClose: 2000,
-          });
-
-          setTimeout(() => navigate("/dashboard"), 2000);
-        } else {
-          toast.error("ایمیل یا رمز عبور اشتباه است!", {
-            position: "top-center",
-            autoClose: 2500,
-          });
+          if (createProfileError) throw createProfileError;
         }
-      } catch (error) {
-        toast.error("خطا در ورود به سیستم!", {
+
+        const userData = {
+          id: data.user.id,
+          email: data.user.email,
+          role: profile?.role || "user",
+          name: profile?.name || "",
+        };
+
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        toast.success("ورود موفقیت آمیز! در حال انتقال...", {
           position: "top-center",
-          autoClose: 2500,
+          autoClose: 2000,
         });
+
+        setTimeout(() => navigate("/dashboard"), 2000);
+      } catch (error) {
+        const errorMessage =
+          {
+            "Invalid login credentials": "ایمیل یا رمز عبور اشتباه است",
+            "Email not confirmed": "لطفا ابتدا ایمیل خود را تایید کنید",
+          }[error.message] || "خطا در ورود به سیستم";
+
+        toast.error(errorMessage, {
+          position: "top-center",
+          autoClose: 3000,
+        });
+      } finally {
+        setLoading(false);
       }
     },
   });
+
+  const handlePasswordReset = async () => {
+    if (!formik.values.email) {
+      toast.error("لطفا ایمیل خود را وارد کنید", { position: "top-center" });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        formik.values.email
+      );
+      if (error) throw error;
+
+      toast.success(
+        `لینک بازنشانی رمز عبور به ${formik.values.email} ارسال شد`,
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
+      );
+    } catch (error) {
+      toast.error("خطا در ارسال لینک بازنشانی", { position: "top-center" });
+    }
+  };
 
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        direction: "rtl",
-        padding: 2,
+        bgcolor: "#f0f2f5",
+        p: 2,
+        mb: 2,
       }}
     >
       <ToastContainer rtl />
@@ -105,49 +182,106 @@ const Login = () => {
           width: "100%",
           maxWidth: "400px",
           textAlign: "center",
-          backgroundColor: "#ffffff",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Typography variant="h4" mb={3} fontWeight="bold" color="#333">
+        <Typography variant="h4" mb={3} fontWeight="bold">
           ورود به حساب
         </Typography>
+
         <CacheProvider value={rtlCache}>
-          <Box
-            component="form"
-            onSubmit={formik.handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            <TextField
-              label="ایمیل"
-              {...formik.getFieldProps("email")}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-            />
-            <TextField
-              label="رمز عبور"
-              type="password"
-              {...formik.getFieldProps("password")}
-              error={formik.touched.password && Boolean(formik.errors.password)}
-              helperText={formik.touched.password && formik.errors.password}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: "#1976d2",
-                borderRadius: 2,
-                boxShadow: "0 4px 10px rgba(25, 118, 210, 0.5)",
-                "&:hover": {
-                  backgroundColor: "#1565c0",
-                  boxShadow: "0 6px 15px rgba(21, 101, 192, 0.6)",
-                },
-              }}
+          <form onSubmit={formik.handleSubmit}>
+            <Box
+              sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 2 }}
             >
-              ورود
-            </Button>
-            <Link to="/register">حساب کاربری ندارید؟ ثبت نام کنید</Link>
-          </Box>
+              <TextField
+                fullWidth
+                label="آدرس ایمیل"
+                name="email"
+                variant="outlined"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                error={formik.touched.email && Boolean(formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+                disabled={loading}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="رمز عبور"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                variant="outlined"
+                value={formik.values.password}
+                onChange={formik.handleChange}
+                error={
+                  formik.touched.password && Boolean(formik.errors.password)
+                }
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
+                helperText={formik.touched.password && formik.errors.password}
+                disabled={loading}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        aria-label="toggle-password"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={loading}
+                sx={{
+                  backgroundColor: "#374bff",
+                  borderRadius: "12px",
+                  boxShadow: "0 6px 15px rgba(55, 75, 255, 0.5)",
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "ورود به حساب"
+                )}
+              </Button>
+
+              <Box
+                sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
+              >
+                <Button
+                  component={Link}
+                  to="/register"
+                  color="primary"
+                  sx={{ textDecoration: "none" }}
+                >
+                  ایجاد حساب جدید
+                </Button>
+
+                <Button
+                  onClick={handlePasswordReset}
+                  color="secondary"
+                  sx={{ textDecoration: "none" }}
+                >
+                  بازیابی رمز عبور
+                </Button>
+              </Box>
+            </Box>
+          </form>
         </CacheProvider>
       </Paper>
     </Box>

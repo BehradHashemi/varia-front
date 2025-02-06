@@ -8,8 +8,9 @@ import { HiMenuAlt3 } from "react-icons/hi";
 import { FaTimes } from "react-icons/fa";
 import { IoPersonSharp } from "react-icons/io5";
 import { RiUserSettingsFill } from "react-icons/ri";
+
 function Header() {
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(
     () => JSON.parse(localStorage.getItem("user")) || null
   );
@@ -24,17 +25,15 @@ function Header() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setUser(JSON.parse(localStorage.getItem("user")) || null);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const userData = JSON.parse(localStorage.getItem("user")) || null;
+    setUser(userData);
+  }, [localStorage.getItem("user")]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/login");
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+    document.getElementById("nav_2").style.width = menuOpen ? "0" : "60%";
   };
+
   return (
     <div className="header">
       {/* NavBar on Computer or Tablet */}
@@ -48,20 +47,17 @@ function Header() {
         <NavLink to="/contact">تماس با ما</NavLink>
         <NavLink to="/blogs">وبلاگ</NavLink>
       </nav>
+
+      {/* منو برای موبایل */}
       <HiMenuAlt3
         className="menu"
         color="374BFF"
-        onClick={() => {
-          setMenuOpen(menuOpen);
-          document.getElementById("nav_2").style.width = "45%";
-        }}
+        onClick={toggleMenu}
       />
       <nav id="nav_2" className={menuOpen ? "open" : ""}>
         <FaTimes
           className="closeMenu"
-          onClick={() => {
-            document.getElementById("nav_2").style.width = "0";
-          }}
+          onClick={toggleMenu}
         />
         <NavLink to="/list">
           <BiMenuAltRight style={{ fontSize: "1.5rem" }} /> لیست خدمات
@@ -72,10 +68,11 @@ function Header() {
         <NavLink to="/blogs">وبلاگ</NavLink>
       </nav>
 
+      {/* دکمه‌های کاربر */}
       <div>
         {user ? (
           <div id="btn_group">
-            {user.userType === "admin" ? (
+            {user.role === "admin" ? (
               <Link
                 to="/admin-panel"
                 id="admin"

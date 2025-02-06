@@ -24,10 +24,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import TuneIcon from '@mui/icons-material/Tune';
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  "https://ojzkqlpghuyjazsitnic.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qemtxbHBnaHV5amF6c2l0bmljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgzMjcwOTAsImV4cCI6MjA1MzkwMzA5MH0.4ullxbHIL1BtAlbiVTUx7D3RWAFdLrMExKVQv2yNiqA"
-);
+ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
@@ -67,7 +66,7 @@ const BlogList = () => {
         setBlogs(data);
       }
     } catch (error) {
-      toast.error("خطا در دریافت کاربران!");
+      toast.error("خطا در دریافت مقالات!");
     } finally {
       setLoading(false);
     }
