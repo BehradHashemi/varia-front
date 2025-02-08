@@ -9,7 +9,7 @@ import {
   Paper,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
-
+import DOMPurify from "dompurify";
 import { createClient } from "@supabase/supabase-js";
 import e2p from "../../../../utils/persianNumber";
  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -91,7 +91,9 @@ const ManageDetailBlog = () => {
           <Typography
             variant="body1"
             sx={{ lineHeight: "1.8", textAlign: "justify" }}
-            dangerouslySetInnerHTML={{ __html: article.content }}
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(article.content),
+            }}
           />
         </Paper>
       )}

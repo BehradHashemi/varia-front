@@ -16,8 +16,8 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import e2p from "../../utils/persianNumber";
 import { createClient } from "@supabase/supabase-js";
-
- const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+import DOMPurify from "dompurify";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -63,7 +63,9 @@ const DetailBlog = () => {
         <Box sx={{ display: "flex", justifyContent: "center", m: "auto" }}>
           <CircularProgress />
         </Box>
-      ) : !blog ? <>Nist</> : (
+      ) : !blog ? (
+        <>Nist</>
+      ) : (
         <Paper
           elevation={3}
           sx={{
@@ -103,7 +105,9 @@ const DetailBlog = () => {
               textAlign: "justify",
               color: "#333",
             }}
-            dangerouslySetInnerHTML={{ __html: blog.content }}
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(blog.content),
+            }}
           ></Typography>
 
           <Box sx={{ mt: 3 }}>

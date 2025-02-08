@@ -1,14 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
+import { styled } from "@mui/system";
+
+const StyledQuillContainer = styled("div")({
+  ".ql-container": {
+    borderRadius: "0 0 12px 12px",
+    padding: "8px",
+    minHeight: "500px",
+  },
+  ".ql-editor": {
+    fontSize: "16px",
+    color: "#333",
+    minHeight: "200px",
+  },
+  ".ql-toolbar": {
+    backgroundColor: "#2e2e2e",
+    borderRadius: "12px 12px 0 0",
+  },
+});
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import e2p from "../../../utils/persianNumber";
-import { createClient } from "@supabase/supabase-js";
 import moment from "moment-jalaali";
+import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import { prefixer } from "stylis";
@@ -60,10 +81,24 @@ const WriteBlog = () => {
     fetchUser();
   }, [navigate]);
 
-  const handleChange = (e) => {
-    setBlog({ ...blog, [e.target.name]: e.target.value });
+  const handleQuillChange = (value) => {
+    setBlog({ ...blog, content: value });
   };
-
+  const handleChange = (e) => {
+    if (e && e.target) {
+      setBlog({ ...blog, [e.target.name]: e.target.value });
+    }
+  };
+  const modules = {
+    toolbar: [
+      [{ header: [2, 3, false] }],
+      ["bold", "italic", "underline", "code"],
+      ["blockquote", "code-block"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link"],
+      ["clean"],
+    ],
+  };
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -158,23 +193,14 @@ const WriteBlog = () => {
               }}
             />
           </CacheProvider>
-          <TextField
-            dir="ltr"
-            label="متن مقاله"
-            variant="outlined"
-            name="content"
-            value={blog.content}
-            onChange={handleChange}
-            fullWidth
-            multiline
-            rows={20}
-            sx={{
-              textAlign: "right",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "12px",
-              },
-            }}
-          />
+          <StyledQuillContainer>
+            <ReactQuill
+              theme="snow"
+              value={blog.content}
+              onChange={handleQuillChange}
+              modules={modules}
+            />
+          </StyledQuillContainer>
           <Typography variant="subtitle1" color="textSecondary">
             تاریخ انتشار: {e2p(blog.date)}
           </Typography>

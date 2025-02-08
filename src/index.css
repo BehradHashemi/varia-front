@@ -39,3 +39,17 @@ li {
 input[type="text"] {
   text-align: right !important;
 }
+
+code {
+  background-color: #2e2e2e;
+  color: #fff;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
+  direction: ltr;
+  text-decoration: none;
+}
