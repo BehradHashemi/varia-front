@@ -5,7 +5,7 @@ function Banner() {
     <div className={BannerStyles.container}>
       <main>
         <h1>شروع کسب و کار آنلاین با</h1>
-        <h3>تیم طراحی سایت و پشتیبانی FronckTeam</h3>
+        <h2>تیم طراحی سایت و پشتیبانی VARIA</h2>
         <br />
         <div className={BannerStyles.links}>
           <a href="/#">درخواست مشاوره رایگان</a>
