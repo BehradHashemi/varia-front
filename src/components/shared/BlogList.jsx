@@ -21,10 +21,10 @@ import {
 import { Link } from "react-router-dom";
 import e2p from "../../utils/persianNumber";
 import SearchIcon from "@mui/icons-material/Search";
-import TuneIcon from '@mui/icons-material/Tune';
+import TuneIcon from "@mui/icons-material/Tune";
 import { createClient } from "@supabase/supabase-js";
 
- const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -155,9 +155,7 @@ const BlogList = () => {
                 backgroundColor: "#FFF",
                 boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
               }}
-              startAdornment={
-                <TuneIcon sx={{ color: "#999", mr: 1 }} />
-              }
+              startAdornment={<TuneIcon sx={{ color: "#999", mr: 1 }} />}
             >
               <MenuItem value="">همه مقالات</MenuItem>
               {allTags.map((tag) => (
@@ -303,23 +301,7 @@ const BlogCard = React.memo(({ blog }) => {
             <Typography variant="body2" color="textSecondary" gutterBottom>
               تاریخ انتشار: {e2p(blog.date)}
             </Typography>
-            <Typography
-              variant="body1"
-              paragraph
-              sx={{
-                color: "text.secondary",
-                fontSize: "0.9rem",
-                flexGrow: 1,
-                minHeight: "60px",
-                display: "-webkit-box",
-                WebkitBoxOrient: "vertical",
-                WebkitLineClamp: 3,
-                overflow: "hidden",
-              }}
-            >
-              {blog.content.slice(0, 50)}...
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", my: 1 }}>
               {blog.tags.split("،").map((tag) => (
                 <Chip
                   key={tag}
