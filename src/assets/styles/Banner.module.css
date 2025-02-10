@@ -24,13 +24,16 @@
 }
 
 .container main h1 {
+  font-size: 3rem;
   font-weight: 700;
   background: -webkit-linear-gradient(#ffffff, #ffffff70);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.container main h3 {
+.container main h2 {
+  font-size: 2rem;
   font-weight: 700;
+  margin: 10px auto;
 }
 .container main .links {
   display: flex;
@@ -84,15 +87,26 @@
     margin: 20px auto;
   }
   .container aside img {
-    width: 85%;
+    width: 100%;
   }
   .container main {
     width: 100%;
-    margin: auto;
+    margin: 50px auto 0;
     text-align: center;
   }
   .container aside {
     width: 100%;
+  }
+  .container main h1 {
+    font-size: 2rem;
+  }
+  .container main h2 {
+    font-size: 1.3rem;
+    margin: 0;
+  }
+  .container main .links a {
+    border-radius: 14px;
+    padding: 7px 10px;
   }
   .links {
     display: flex;

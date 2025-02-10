@@ -69,12 +69,15 @@
     width: 100%;
   }
 }
-@media (width <= 768px) {
+@media (width <= 500px) {
   .container main h2 {
     font-size: 1rem;
   }
   .container main h1 {
     font-size: 1.5rem;
+  }
+  .container img {
+    width: 95%;
   }
   .buttons a {
     padding: 5px;
