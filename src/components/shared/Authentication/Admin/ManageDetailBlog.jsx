@@ -25,7 +25,7 @@ const ManageDetailBlog = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       const { data, error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .select("*")
         .eq("id", id)
         .single();

@@ -22,7 +22,7 @@ import {
 import { CheckCircle, Delete, Cancel } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import e2p from "../../../../utils/persianNumber";
-import { MdAdminPanelSettings, MdDashboard, MdPeople } from "react-icons/md";
+import { MdAdminPanelSettings, MdDashboard, MdPeople, MdSchool } from "react-icons/md";
 
 import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -71,7 +71,7 @@ const ManageBlogs = () => {
   const fetchArticles = async () => {
     setLoading(true);
     try {
-      let query = supabase.from("Fronck-Blogs").select("*");
+      let query = supabase.from("VARIA-Blogs").select("*");
       if (filter !== "all") {
         query = query.eq("status", filter);
       }
@@ -79,7 +79,7 @@ const ManageBlogs = () => {
       if (error) throw error;
       setArticles(data);
     } catch (error) {
-      console.error("خطا در دریافت مقالات:", error);
+      console.error("خطا در دریافت وبلاگ:", error);
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ const ManageBlogs = () => {
   const handleApprove = async (id) => {
     try {
       const { error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .update({ status: "approved" })
         .eq("id", id);
 
@@ -102,7 +102,7 @@ const ManageBlogs = () => {
   const handleReject = async (id) => {
     try {
       const { error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .update({ status: "rejected" })
         .eq("id", id);
 
@@ -116,7 +116,7 @@ const ManageBlogs = () => {
   const handleDelete = async (id) => {
     try {
       const { error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -140,6 +140,11 @@ const ManageBlogs = () => {
       text: "مدیرت کاربران",
       icon: <MdPeople />,
       path: "/manage-users",
+    },
+    {
+      text: "مدیریت دوره ها",
+      icon: <MdSchool />,
+      path: "/manage-products",
     },
   ];
 
@@ -172,7 +177,7 @@ const ManageBlogs = () => {
                 textAlign: "center",
               }}
             >
-              مدریت مقالات
+              مدریت وبلاگ
             </Typography>
             <List>
               {menuItems.map((item, index) => (
@@ -199,7 +204,7 @@ const ManageBlogs = () => {
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
               >
-                <MenuItem value="all">همه مقالات</MenuItem>
+                <MenuItem value="all">همه وبلاگ</MenuItem>
                 <MenuItem value="approved">تایید شده</MenuItem>
                 <MenuItem value="rejected">رد شده</MenuItem>
                 <MenuItem value="pending">در انتظار تایید</MenuItem>

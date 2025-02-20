@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import FooterStyles from "../../assets/styles/Footer.module.css";
 
-import enamad from "/enamad.png";
-import instagram from "/instagram.png";
 import telegram from "/telegram.png";
+import instagram from "/instagram.png";
 
 function Footer() {
   return (

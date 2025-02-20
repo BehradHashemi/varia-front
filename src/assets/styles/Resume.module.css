@@ -11,26 +11,32 @@
   border-radius: 24px;
   z-index: 100;
 }
+
 .container img {
   display: block;
   width: 50%;
   animation: MoveLeftRight 2s linear infinite;
 }
+
 .container main {
   width: 50%;
 }
+
 .container main h2,
 .container main h1 {
   font-weight: 800;
 }
+
 .container main p {
   text-align: justify;
   line-height: 30px;
 }
+
 .buttons {
   display: flex;
   align-items: center;
 }
+
 .buttons a {
   border-radius: 12px;
   padding: 10px;
@@ -42,6 +48,7 @@
   background-color: #ffffff;
   margin: 10px 0;
 }
+
 @keyframes MoveLeftRight {
   0% {
     transform: translateX(10px);
@@ -53,6 +60,7 @@
     transform: translateX(10px);
   }
 }
+
 @media (width <= 1000px) {
   .container {
     flex-direction: column;
@@ -60,26 +68,66 @@
     padding: 10px 15px 40px 15px;
     margin: 20px auto;
   }
+
   .container img {
     display: block;
     width: 60%;
   }
+
   .container main {
     width: 100%;
+    text-align: center; /* متن‌ها در وسط صفحه قرار می‌گیرند */
+  }
+
+  .container main p {
+    line-height: 24px; /* کاهش ارتفاع خط برای خوانایی بهتر */
+  }
+
+  .buttons {
+    justify-content: center; /* دکمه‌ها در وسط صفحه قرار می‌گیرند */
   }
 }
-@media (width <= 500px) {
+
+@media (width <= 768px) {
   .container main h2 {
-    font-size: 1.3rem;
+    font-size: 1.5rem; /* کاهش اندازه فونت h2 */
   }
+
   .container main h1 {
-    font-size: 1.4rem;
+    font-size: 1.8rem; /* کاهش اندازه فونت h1 */
   }
-  .container img {
-    width: 95%;
+
+  .container main p {
+    font-size: 0.9rem; /* کاهش اندازه فونت پاراگراف */
+    line-height: 22px; /* کاهش ارتفاع خط */
   }
+
   .buttons a {
-    padding: 5px;
-    margin: 10px 0;
+    font-size: 0.9rem; /* کاهش اندازه فونت دکمه */
+    padding: 8px; /* کاهش padding دکمه */
+  }
+}
+
+@media (width <= 480px) {
+  .container main h2 {
+    font-size: 1.3rem; /* کاهش بیشتر اندازه فونت h2 */
+  }
+
+  .container main h1 {
+    font-size: 1.4rem; /* کاهش بیشتر اندازه فونت h1 */
+  }
+
+  .container main p {
+    font-size: 0.8rem; /* کاهش بیشتر اندازه فونت پاراگراف */
+    line-height: 20px; /* کاهش بیشتر ارتفاع خط */
+  }
+
+  .buttons a {
+    font-size: 0.8rem; /* کاهش بیشتر اندازه فونت دکمه */
+    padding: 6px; /* کاهش بیشتر padding دکمه */
+  }
+
+  .container img {
+    width: 95%; /* افزایش عرض تصویر برای صفحه‌های بسیار کوچک */
   }
 }

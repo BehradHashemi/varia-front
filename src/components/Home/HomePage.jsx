@@ -3,6 +3,7 @@ import Service from "../layout/Service";
 import Resume from "../layout/Resume";
 import Support from "../layout/Support";
 import UIUX from "../layout/UIUX";
+import Target from "../layout/Target.jsx";
 import Blog from "../layout/Blog";
 
 function HomePage() {
@@ -14,6 +15,7 @@ function HomePage() {
       <Resume></Resume>
       <Support></Support>
       <UIUX></UIUX>
+      <Target></Target>
       <Blog></Blog>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -24,27 +24,30 @@ function Blog() {
   useEffect(() => {
     fetchBlogs();
   }, []);
-
   const fetchBlogs = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .select("*")
         .eq("status", "approved")
-        .order("date", { ascending: false }) // مرتب‌سازی بر اساس جدیدترین مقاله
-        .limit(4); // دریافت فقط ۴ مقاله‌ی آخر
+        .order("date", { ascending: false })
+        .limit(4);
       if (error) {
         throw error;
+      } else {
+        setBlogs(data);
       }
-      setBlogs(data);
     } catch (error) {
-      console.error("خطا در دریافت مقالات:", error);
+      toast.error("خطا در دریافت وبلاگ!");
     } finally {
       setLoading(false);
     }
   };
-
+  const allTags = useMemo(
+    () => [...new Set(blogs.flatMap((blog) => blog.tags.split("،")))],
+    [blogs]
+  );
   return (
     <div className={BlogStyles.div}>
       <h1
@@ -92,7 +95,29 @@ function Blog() {
                   <img src={blog.image} alt={blog.title} />
                   <h2>{blog.title}</h2>
                   <span>{e2p(blog.date)}</span>
-                  <p>{blog.content.slice(0, 50)} ...</p>
+                  <p>{blog.author}</p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 1,
+                      flexWrap: "wrap",
+                      margin: "10px 0",
+                    }}
+                  >
+                    {allTags.map((tag) => (
+                      <span
+                        style={{
+                          background: "#FF8B00",
+                          color: "#FFF",
+                          borderRadius: "8px",
+                          marginLeft: "5px",
+                          padding: "5px",
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                   <Link to={`/blogs/${blog.id}`}>
                     <GoArrowLeft color="#FF8B00" fontSize="2rem" />
                   </Link>

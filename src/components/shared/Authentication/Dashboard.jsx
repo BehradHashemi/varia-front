@@ -92,7 +92,7 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .select("*")
         .eq("status", "approved");
       if (error) {
@@ -101,7 +101,7 @@ const Dashboard = () => {
         setBlogs(data);
       }
     } catch (error) {
-      toast.error("خطا در دریافت مقالات!");
+      toast.error("خطا در دریافت وبلاگ!");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ const Dashboard = () => {
 
   const getMenuItems = () => {
     const baseItems = [
-      { text: "مقالات من", icon: <MdOutlineArticle />, path: "/my-blogs" },
+      { text: "وبلاگ من", icon: <MdOutlineArticle />, path: "/my-blogs" },
       { text: "خریدهای من", icon: <MdShoppingCart />, path: "/cart" },
     ];
 
@@ -301,7 +301,7 @@ const Dashboard = () => {
                     <Grid item xs={6} md={3}>
                       <Paper sx={{ p: 2, textAlign: "center" }}>
                         <Typography variant="body2">
-                          مقالات منتشر شده
+                          وبلاگ منتشر شده
                         </Typography>
                         <Typography variant="h5" fontWeight={700}>
                           {blogs.length == 0 ? "-" : e2p(blogs.length)}

@@ -57,7 +57,7 @@ const BlogList = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .select("*")
         .eq("status", "approved");
       if (error) {
@@ -66,7 +66,7 @@ const BlogList = () => {
         setBlogs(data);
       }
     } catch (error) {
-      toast.error("خطا در دریافت مقالات!");
+      toast.error("خطا در دریافت وبلاگ!");
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ const BlogList = () => {
           fontSize: { xs: "2rem", sm: "3rem" },
         }}
       >
-        مقالات
+        وبلاگ
       </Typography>
       <Box
         sx={{
@@ -157,7 +157,7 @@ const BlogList = () => {
               }}
               startAdornment={<TuneIcon sx={{ color: "#999", mr: 1 }} />}
             >
-              <MenuItem value="">همه مقالات</MenuItem>
+              <MenuItem value="">همه وبلاگ</MenuItem>
               {allTags.map((tag) => (
                 <MenuItem key={tag} value={tag}>
                   {tag}
@@ -168,7 +168,7 @@ const BlogList = () => {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="جستجو در مقالات..."
+            placeholder="جستجو در وبلاگ..."
             value={searchTerm}
             onChange={handleSearchChange}
             sx={{

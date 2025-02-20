@@ -5,7 +5,7 @@
   justify-content: space-between;
   align-items: center;
   margin: 150px auto;
-  padding: 0 50px;
+  padding: 10px 50px;
   background: #ff8b00;
   color: #ffffff;
   border-radius: 24px;
@@ -60,6 +60,7 @@
     transform: rotateZ(10deg);
   }
 }
+/* افزودن مدیا کوئری برای سایزهای مختلف */
 @media (width <= 1000px) {
   .container {
     flex-direction: column;
@@ -68,25 +69,53 @@
     margin: 20px auto;
   }
   .container img {
-    display: block;
     width: 60%;
   }
   .container main {
     width: 100%;
+    text-align: center; /* تراز وسط متن */
+  }
+  .container main p {
+    line-height: 24px; /* کاهش ارتفاع خط */
+  }
+  .buttons {
+    justify-content: center; /* تراز وسط دکمه */
   }
 }
-@media (width <= 500px) {
+
+@media (width <= 768px) {
   .container main h2 {
-    font-size: 1.3rem;
+    font-size: 1.4rem; /* تنظیم فونت h2 */
   }
   .container main h1 {
-    font-size: 1.5rem;
+    font-size: 1.7rem; /* تنظیم فونت h1 */
   }
-  .container img {
-    width: 95%;
+  .container main p {
+    font-size: 0.9rem; /* کاهش فونت پاراگراف */
+    line-height: 22px;
   }
   .buttons a {
-    padding: 5px;
-    margin: 10px 0;
+    font-size: 0.9rem; /* کاهش فونت دکمه */
+    padding: 8px;
+  }
+}
+
+@media (width <= 480px) {
+  .container main h2 {
+    font-size: 1.2rem; /* تنظیم مجدد فونت h2 */
+  }
+  .container main h1 {
+    font-size: 1.4rem; /* تنظیم مجدد فونت h1 */
+  }
+  .container main p {
+    font-size: 0.8rem; /* کاهش بیشتر فونت پاراگراف */
+    line-height: 20px;
+  }
+  .buttons a {
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+  .container img {
+    width: 95%; /* تصویر در موبایل کامل نمایش داده شود */
   }
 }

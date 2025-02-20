@@ -37,7 +37,7 @@ const DetailBlog = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .select("*")
         .eq("id", id)
         .single();
@@ -47,7 +47,7 @@ const DetailBlog = () => {
         setBlog(data);
       }
     } catch (error) {
-      console.error("خطا در دریافت مقالات:", error);
+      console.error("خطا در دریافت وبلاگ:", error);
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,14 @@
   font-family: "YekanBakh";
   src: url("./assets/YekanBakh/YekanBakh-Regular/YekanBakh-Regular.ttf");
 }
-
+@font-face {
+  font-family: "Sahel";
+  src: url("./assets/Sahel/Sahel-SemiBold.ttf");
+}
+@font-face {
+  font-family: "Yekan";
+  src: url("./assets/Yekan-Font-master/Yekan.ttf") format("truetype");
+}
 * {
   margin: 0;
   padding: 0;
@@ -23,7 +30,7 @@ a:hover {
 body {
   min-width: 320px;
   min-height: 100vh;
-  max-width: 1300px;
+  max-width: 1500px;
   color: #616161;
   background-color: #f4f5f7;
   margin: 0 auto;

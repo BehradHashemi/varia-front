@@ -74,6 +74,12 @@
   .container aside img {
     width: 100%;
   }
+  .container main h1 {
+    font-size: 2.5rem; /* کاهش اندازه فونت برای صفحه‌های کوچک‌تر */
+  }
+  .container main h2 {
+    font-size: 1.8rem; /* کاهش اندازه فونت برای صفحه‌های کوچک‌تر */
+  }
 }
 
 @media (width <= 768px) {
@@ -98,10 +104,10 @@
     width: 100%;
   }
   .container main h1 {
-    font-size: 2rem;
+    font-size: 2rem; /* کاهش بیشتر اندازه فونت برای صفحه‌های موبایل */
   }
   .container main h2 {
-    font-size: 1.3rem;
+    font-size: 1.3rem; /* کاهش بیشتر اندازه فونت برای صفحه‌های موبایل */
     margin: 0;
   }
   .container main .links a {
@@ -113,5 +119,16 @@
     justify-content: space-evenly;
     margin: auto;
     padding: 5px;
+  }
+}
+@media (width <= 480px) {
+  .container main h1 {
+    font-size: 1.5rem; /* کاهش بیشتر اندازه فونت برای صفحه‌های بسیار کوچک */
+  }
+  .container main h2 {
+    font-size: 1rem; /* کاهش بیشتر اندازه فونت برای صفحه‌های بسیار کوچک */
+  }
+  .container main .links a {
+    font-size: 0.9rem; /* کاهش اندازه فونت لینک‌ها برای صفحه‌های بسیار کوچک */
   }
 }

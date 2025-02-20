@@ -56,14 +56,14 @@ const MyBlogs = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .select("*")
         .eq("author_id", userId);
 
       if (error) throw error;
       setArticles(data);
     } catch (error) {
-      console.error("خطا در دریافت مقالات:", error);
+      console.error("خطا در دریافت وبلاگ:", error);
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ const MyBlogs = () => {
     }
     try {
       const { error } = await supabase
-        .from("Fronck-Blogs")
+        .from("VARIA-Blogs")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -96,7 +96,7 @@ const MyBlogs = () => {
       }}
     >
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        مقالات من
+        وبلاگ من
       </Typography>
       <Button
         variant="contained"

@@ -128,7 +128,7 @@ const WriteBlog = () => {
         author_id: user.author_id,
       };
 
-      const { error } = await supabase.from("Fronck-Blogs").insert([newBlog]);
+      const { error } = await supabase.from("VARIA-Blogs").insert([newBlog]);
       if (error) throw error;
 
       toast.success("مقاله در انتظار تایید قرار گرفت.", {

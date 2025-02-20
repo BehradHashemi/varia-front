@@ -4,7 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 150px auto 50px;
+  margin: 150px auto;
   padding: 50px;
   background: #374bff;
   color: #ffffff;
@@ -13,7 +13,7 @@
 }
 .container img {
   display: block;
-  width: 50%;
+  width: 40%;
   animation: MoveUpDown 2s linear infinite;
 }
 .container main {
