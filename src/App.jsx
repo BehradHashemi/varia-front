@@ -55,7 +55,9 @@ function App() {
       <h4
         style={{
           width: "100%",
+          height: "60px",
           textAlign: "center",
+          margin: "0 auto 60px",
         }}
       >
         طراحی شده با ❤️ توسط{" "}

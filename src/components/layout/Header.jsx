@@ -84,7 +84,7 @@ function Header() {
               style={{
                 backgroundColor: "#374bff",
                 color: "#ffffff",
-                margin: "12px",
+                marginRight: "12px",
               }}
             >
               <IoPersonSharp />
@@ -104,108 +104,24 @@ function Header() {
 
       {/* منوی موبایل */}
       <nav id="nav_2">
-        <ul
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "0 8px",
-            height: "60px",
-          }}
-        >
-          <li>
-            <NavLink to="/">
-              <HomeIcon />
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/services">
-              <ListIcon />
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/cart">
-              <ShoppingBagIcon />
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/contact">
-              <ContactMailIcon />
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/blogs">
-              <DescriptionIcon />
-            </NavLink>
-          </li>
-        </ul>
+        <NavLink to="/services">
+          <ListIcon />
+        </NavLink>
+        <NavLink to="/cart">
+          <ShoppingBagIcon />
+        </NavLink>
+        <NavLink to="/">
+          <HomeIcon />
+        </NavLink>
+        <NavLink to="/contact">
+          <ContactMailIcon />
+        </NavLink>
+        <NavLink to="/blogs">
+          <DescriptionIcon />
+        </NavLink>
       </nav>
     </>
   );
 }
 
 export default Header;
-
-{
-  /* <Paper
-        sx={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 20,
-          display: { xs: "block", md: "none" },
-          width: "100%",
-          borderTop: "1px solid #ddd",
-        }}
-        elevation={3}
-      >
-        <BottomNavigation
-          value={value}
-          // onChange={(event, newValue) => setValue(newValue)}
-          // sx={{
-          //   "& .Mui-selected": { color: "#374bff" },
-          //   "& a:hover": { color: "#374bffcc" },
-          //   paddingBottom: "8px",
-          //   paddingTop: "8px",
-          //   height: "60px",
-          // }}
-        >
-          <BottomNavigationAction
-            label="خانه"
-            icon={<HomeIcon sx={{ fontSize: "1.5rem" }} />}
-            component={NavLink}
-            to="/"
-            sx={{ color: value === 0 ? "#374bff" : "#666" }}
-          />
-          <BottomNavigationAction
-            label="خدمات"
-            icon={<ListIcon sx={{ fontSize: "1.5rem" }} />}
-            component={NavLink}
-            to="/services"
-            sx={{ color: value === 1 ? "#374bff" : "#666" }}
-          />
-          <BottomNavigationAction
-            label="وبلاگ"
-            icon={<DescriptionIcon sx={{ fontSize: "1.5rem" }} />}
-            component={NavLink}
-            to="/blogs"
-            sx={{ color: value === 1 ? "#374bff" : "#666" }}
-          />
-          <BottomNavigationAction
-            label="سبد خرید"
-            icon={<ShoppingBagIcon sx={{ fontSize: "1.5rem" }} />}
-            component={NavLink}
-            to="/cart"
-            sx={{ color: value === 2 ? "#374bff" : "#666" }}
-          />
-          <BottomNavigationAction
-            label="تماس"
-            icon={<ContactMailIcon sx={{ fontSize: "1.5rem" }} />}
-            component={NavLink}
-            to="/contact"
-            sx={{ color: value === 3 ? "#374bff" : "#666" }}
-          />
-        </BottomNavigation>
-      </Paper> */
-}

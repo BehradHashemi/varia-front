@@ -118,22 +118,24 @@ function Blog() {
                       </span>
                     ))}
                   </div>
-                  <Link
-                    to={`/blogs/${blog.id}`}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "left",
-                      color: "#fff",
-                      background: "#374BFF",
-                      borderRadius: "12px",
-                      textTransform: "none",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    مطالعه بیشتر
-                    <GoArrowLeft color="#fff" fontSize="2rem" />
-                  </Link>
+                    <Link
+                      to={`/blogs/${blog.id}`}
+                      style={{
+                        display: "inline-flex",
+                        justifyContent: "left",
+                        alignItems: "center",
+                        textAlign: "left",
+                        color: "#fff",
+                        background: "#374BFF",
+                        borderRadius: "12px",
+                        textTransform: "none",
+                        fontWeight: "bold",
+                        width: "min-width",
+                      }}
+                    >
+                      مطالعه بیشتر
+                      <GoArrowLeft color="#fff" fontSize="2rem" />
+                    </Link>
                 </div>
               </SwiperSlide>
             ))}
