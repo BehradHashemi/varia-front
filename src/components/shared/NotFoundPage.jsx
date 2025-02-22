@@ -7,7 +7,6 @@ function NotFoundPage() {
         flexDirection: "column",
         alignContent: "center",
         justifyContent: "center",
-        margin: "auto",
         textAlign: "center",
         margin: "20px auto",
       }}

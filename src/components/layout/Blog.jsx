@@ -104,7 +104,7 @@ function Blog() {
                       margin: "10px 0",
                     }}
                   >
-                    {allTags.map((tag) => (
+                    {blog.tags.split("،").map((tag) => (
                       <span
                         style={{
                           background: "#FF8B00",
@@ -118,8 +118,21 @@ function Blog() {
                       </span>
                     ))}
                   </div>
-                  <Link to={`/blogs/${blog.id}`}>
-                    <GoArrowLeft color="#FF8B00" fontSize="2rem" />
+                  <Link
+                    to={`/blogs/${blog.id}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "left",
+                      color: "#fff",
+                      background: "#374BFF",
+                      borderRadius: "12px",
+                      textTransform: "none",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    مطالعه بیشتر
+                    <GoArrowLeft color="#fff" fontSize="2rem" />
                   </Link>
                 </div>
               </SwiperSlide>
